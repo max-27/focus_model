@@ -18,11 +18,12 @@ class FocusModule(LightningModule):
         self.net = net
 
         # loss function
-        self.criterion = torch.nn.MSELoss()
+        self.criterion = torch.nn.SmoothL1Loss()
 
         # metric objects for calculating and averaging mean absolute error across batches
         self.train_focus_error = MeanAbsoluteError()
         self.val_focus_error = MeanAbsoluteError()
+        self.test_focus_error = MeanAbsoluteError()
 
         # for averaging loss across batches
         self.train_loss = MeanMetric()
@@ -77,9 +78,9 @@ class FocusModule(LightningModule):
 
         # update and log metrics
         self.test_loss(loss)
-        #self.test_acc(preds, targets)
+        self.test_focus_error(preds, targets)
         self.log("test/loss", self.test_loss, on_step=False, on_epoch=True, prog_bar=True)
-        #self.log("test/acc", self.test_acc, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("test/focus_error", self.test_focus_error, on_step=False, on_epoch=True, prog_bar=True)
 
         return {"loss": loss, "preds": preds, "targets": targets}
 
