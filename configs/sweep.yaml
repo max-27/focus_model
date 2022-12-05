@@ -1,0 +1,18 @@
+program: src/train.py
+name: test123
+method: bayes
+metric:
+  name: val/focus_error
+  goal: minimize
+parameters:
+  model.optimizer.lr:
+    min: 0.00001
+    max: 0.001
+  callbacks.early_stopping.monitor:
+    value: null
+
+command:
+  - ${env}
+  - python
+  - ${program}
+  - ${args_no_hyphens}
