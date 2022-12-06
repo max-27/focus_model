@@ -23,8 +23,10 @@ trainer:
 
 model:
   optimizer:
-    lr: 0.005
-  # net:
+    lr: .003
+    weight_decay: 0.05
+  net:
+    transfer: False
 
 datamodule:
   batch_size: 1

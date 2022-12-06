@@ -15,6 +15,7 @@ class MobileNetV3(nn.Module):
         
         self.regressor = nn.Sequential(
             nn.Flatten(),
+            nn.Hardswish(),
             nn.Linear(576, 1),
         )
         self.model = nn.Sequential(
