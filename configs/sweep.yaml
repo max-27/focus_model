@@ -11,8 +11,6 @@ parameters:
   model.optimizer.weight_decay:
     min: 0.01
     max: 0.05
-  callbacks.early_stopping.monitor:
-    value: null
   datamodule.batch_size:
     values: [1, 8]
 

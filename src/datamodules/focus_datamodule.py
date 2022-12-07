@@ -26,6 +26,8 @@ class FocusDataModule(LightningDataModule):
         batch_size: int = 64,
         num_workers: int = 0,
         pin_memory: bool = False,
+        subsample: bool = False,
+        subsample_size: int = 50,
     ):
         super().__init__()
 
@@ -41,16 +43,9 @@ class FocusDataModule(LightningDataModule):
     def prepare_data(self) -> None:
         pass
     
-    # def setup(self, stage: Optional[str] = None) -> None:
-    #     if not self.data_train and not self.data_val and not self.data_test:
-    #         dataset = FocusDataset(self.hparams.data_dir, transform=self.transforms)
-    #         self.data_train = dataset
-    #         self.data_val = dataset
-    #         self.data_test = dataset
-
     def setup(self, stage: Optional[str] = None) -> None:
         if not self.data_train and not self.data_val and not self.data_test:
-            dataset = FocusDataset(self.hparams.data_dir, transform=self.transforms)
+            dataset = FocusDataset(self.hparams.data_dir, transform=self.transforms, subsample=self.hparams.subsample, subsample_size=self.hparams.subsample_size)
             len_dataset = len(dataset)
             train_size = int(len_dataset * self.hparams.splits[0])
             val_size = int(len_dataset * self.hparams.splits[1])

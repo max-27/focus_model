@@ -18,18 +18,23 @@ seed: 12345
 
 trainer:
   min_epochs: 1
-  max_epochs: 1000
+  max_epochs: 500
+  accelerator: gpu
+  devices: 1
   gradient_clip_val: 0.5
 
 model:
   optimizer:
-    lr: .003
-    weight_decay: 0.05
+    lr: .001
+    weight_decay: 0.0
   net:
     transfer: False
 
 datamodule:
-  batch_size: 1
+  batch_size: 64
+  subsample: True
+  # how many images from the left and right of the optimal focus point e.g. subsample_size = 50 --> 50 images left and 50 images right + optimal focused image
+  subsample_size: 50  
 
 logger:
   wandb:

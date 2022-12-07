@@ -15,4 +15,4 @@ scheduler:
 
 net:
   _target_: src.models.components.mobile_net_v3.MobileNetV3
-  transfer: False
+  transfer: True
