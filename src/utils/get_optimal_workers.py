@@ -14,7 +14,7 @@ from src.datamodules.focus_datamodule import FocusDataModule
 from src.datamodules.components.focus_dataset import FocusDataset
 from torch.utils.data import DataLoader
 
-path = "/Volumes/FOCUS/Inflammation2_665716"
+path = "/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset/Inflammation2_665716"
 batch_size = 1
 
 optimal_time = None
