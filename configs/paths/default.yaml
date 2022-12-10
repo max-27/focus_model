@@ -5,7 +5,8 @@ root_dir: ${oc.env:PROJECT_ROOT}
 
 # path to data directory
 #data_dir: ${paths.root_dir}/data/
-data_dir: /Users/max/Desktop/test_data
+data_dir: /Volumes/FOCUS/Inflammation2_665716
+#data_dir: /n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset/Inflammation2_665716
 
 # path to logging directory
 log_dir: ${paths.root_dir}/logs/

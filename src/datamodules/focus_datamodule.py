@@ -8,12 +8,13 @@ root = pyrootutils.setup_root(
 )
 
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, List
 
 import torch
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import ConcatDataset, DataLoader, Dataset, random_split
 from torchvision.transforms import transforms
+from torchvision.transforms.functional import InterpolationMode
 from src.datamodules.components.focus_dataset import FocusDataset
 
 
@@ -26,14 +27,23 @@ class FocusDataModule(LightningDataModule):
         batch_size: int = 64,
         num_workers: int = 0,
         pin_memory: bool = False,
+        subsample: bool = False,
+        subsample_size: int = 50,
+        image_size: List = [1280, 720],
+        resize_scaling_factor: float = 0.2,
     ):
         super().__init__()
 
         self.save_hyperparameters(logger=False)
-        # self.transforms = transforms.Compose(
-        #     [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]
-        # )
-        self.transforms = None
+        w, h = image_size
+        w_scaled = int(w * resize_scaling_factor)
+        h_scaled = int(h * resize_scaling_factor)
+        self.transforms = transforms.Compose([
+            transforms.ToTensor(), 
+            transforms.Resize(size=(h_scaled, w_scaled), interpolation=InterpolationMode.BILINEAR),
+            transforms.Normalize((0), (1)),
+        ])
+        #self.transforms = None
         self.data_train: Optional[Dataset] = None
         self.data_val: Optional[Dataset] = None
         self.data_test: Optional[Dataset] = None
@@ -43,7 +53,7 @@ class FocusDataModule(LightningDataModule):
     
     def setup(self, stage: Optional[str] = None) -> None:
         if not self.data_train and not self.data_val and not self.data_test:
-            dataset = FocusDataset(self.hparams.data_dir, transform=self.transforms)
+            dataset = FocusDataset(self.hparams.data_dir, transform=self.transforms, subsample=self.hparams.subsample, subsample_size=self.hparams.subsample_size)
             len_dataset = len(dataset)
             train_size = int(len_dataset * self.hparams.splits[0])
             val_size = int(len_dataset * self.hparams.splits[1])

@@ -10,10 +10,13 @@ hydra-colorlog==1.2.0
 hydra-optuna-sweeper==1.2.0
 
 # --------- loggers --------- #
-# wandb
+wandb
 # neptune-client
 # mlflow
 # comet-ml
+
+# --------- image processing --------- #
+scikit-image
 
 # --------- others --------- #
 pyrootutils     # standardizing the project root setup

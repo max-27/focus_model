@@ -11,18 +11,18 @@ class FocusModule(LightningModule):
         self,
         net: torch.nn.Module,
         optimizer: torch.optim.Optimizer,
-        scheduler: torch.optim.lr_scheduler,
+        scheduler: torch.optim.lr_scheduler = None,
     ):
         super().__init__()
         self.save_hyperparameters(logger=False, ignore=["net"])
         self.net = net
 
         # loss function
-        self.criterion = torch.nn.MSELoss()
-
+        self.criterion = torch.nn.SmoothL1Loss()
         # metric objects for calculating and averaging mean absolute error across batches
         self.train_focus_error = MeanAbsoluteError()
         self.val_focus_error = MeanAbsoluteError()
+        self.test_focus_error = MeanAbsoluteError()
 
         # for averaging loss across batches
         self.train_loss = MeanMetric()
@@ -45,12 +45,10 @@ class FocusModule(LightningModule):
         return loss, preds, y
 
     def training_step(self, batch: List[torch.Tensor], batch_idx: int) -> torch.Tensor:
-        x, y = batch
-        y_hat = self(x)
-        loss = self.criterion(y_hat, y)
+        loss, preds, targets = self.step(batch)
         self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         self.train_loss(loss)
-        self.train_focus_error(y_hat, y)
+        self.train_focus_error(preds, targets)
         return loss
 
     def training_epoch_end(self, outs: List[Any]) -> None:
@@ -77,9 +75,9 @@ class FocusModule(LightningModule):
 
         # update and log metrics
         self.test_loss(loss)
-        #self.test_acc(preds, targets)
+        self.test_focus_error(preds, targets)
         self.log("test/loss", self.test_loss, on_step=False, on_epoch=True, prog_bar=True)
-        #self.log("test/acc", self.test_acc, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("test/focus_error", self.test_focus_error, on_step=False, on_epoch=True, prog_bar=True)
 
         return {"loss": loss, "preds": preds, "targets": targets}
 
@@ -87,7 +85,8 @@ class FocusModule(LightningModule):
         pass
 
     def configure_optimizers(self):
-        optimizer = self.hparams.optimizer(params=self.parameters())
+        #optimizer = self.hparams.optimizer(params=self.parameters())
+        optimizer = self.hparams.optimizer(filter(lambda p: p.requires_grad, self.parameters()))
         if self.hparams.scheduler is not None:
             scheduler = self.hparams.scheduler(optimizer=optimizer)
             return {
