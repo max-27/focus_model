@@ -21,13 +21,13 @@ parameters:
     min: 0.04
     max: 0.05
   datamodule.batch_size:
-    values: [8, 16, 32]
+    values: [8, 16, 32, 64]
   datamodule.subsample: 
     value: True
   datamodule.subsample_size: 
     value: 100
   datamodule.num_workers:
-    value: 8
+    value: 20
   model.net.transfer:
     value: True
   paths.data_dir:
