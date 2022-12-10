@@ -27,7 +27,7 @@ parameters:
   datamodule.subsample_size: 
     value: 100
   datamodule.num_workers:
-    value: 2
+    value: 8
   model.net.transfer:
     value: True
   paths.data_dir:
