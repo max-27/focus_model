@@ -47,7 +47,7 @@ class FocusDataset(Dataset):
         return patch, label
 
     def find_files(self) -> None:
-        self.array_images = glob.glob(os.path.join(self.data_dir,'*distance*.jpg')) #TODO add / to distance path
+        self.array_images = glob.glob(os.path.join(self.data_dir,'*/*/distance*.jpg')) #TODO add / to distance path
         self.array_labels = [int(re.findall(r"-?\d+", path)[-1]) for path in self.array_images]
     
     def find_files_by_sample(self, subsample_size: int = 20) -> None:
