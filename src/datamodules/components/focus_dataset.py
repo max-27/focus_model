@@ -79,6 +79,6 @@ class FocusDataset(Dataset):
 
 
 if __name__ == "__main__":
-    dataset = FocusDataset(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset", subsample=True, subsample_size=20)
+    dataset = FocusDataset(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset", subsample=False, subsample_size=20)
     x, y = dataset[0]
     a = 1
