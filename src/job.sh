@@ -11,4 +11,4 @@ module load gcc/6.2.0
 module load cuda/10.1
 module load miniconda3/4.10.3
 source activate focus
-wandb agent ????
+wandb agent djchewbacca/focus_model-src/rs5fyr7j

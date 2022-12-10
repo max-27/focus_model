@@ -38,10 +38,12 @@ class FocusDataset(Dataset):
         label = np.array([self.array_labels[idx] * 3.4])  # one distance value is 3.4um
         
         if self.transform:
-            patch = self.transform(image = patch)['image']
+            patch = self.transform(patch)
 
-        patch = transforms.ToTensor()(patch)
-        label = torch.tensor(label, dtype=torch.float)
+        if type(patch) != torch.Tensor:
+            patch = transforms.ToTensor()(patch)
+        if type(label) != torch.Tensor:
+            label = torch.tensor(label, dtype=torch.float)
         return patch, label
 
     def find_files(self) -> None:

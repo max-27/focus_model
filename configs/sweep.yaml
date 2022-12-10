@@ -1,18 +1,37 @@
 program: src/train.py
-name: test123
+project: Test
+name: transfer_sweep
 method: bayes
 metric:
   name: val/loss
   goal: minimize
 parameters:
+  trainer.accelerator:
+    value: gpu
+  trainer.devices:
+    value: 1
+  trainer.max_epochs:
+    value: 500
+  trainer.gradient_clip_val:
+    value: 0.5
   model.optimizer.lr:
     min: 0.00001
-    max: 0.001
+    max: 0.0001
   model.optimizer.weight_decay:
-    min: 0.01
+    min: 0.04
     max: 0.05
   datamodule.batch_size:
-    values: [1, 8]
+    values: [8]
+  datamodule.subsample: 
+    value: True
+  datamodule.subsample_size: 
+    value: 1
+  datamodule.num_workers:
+    value: 2
+  model.net.transfer:
+    value: True
+  paths.data_dir:
+    value: /Volumes/FOCUS/Inflammation2_665716
 
 command:
   - ${env}

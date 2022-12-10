@@ -29,5 +29,5 @@ for num_workers in range(2, mp.cpu_count(), 2):
     if optimal_time is None or end-start < optimal_time:
         optimal_time = end-start
         optimal_num_workers = num_workers
-    print("Finish with:{} second, num_workers={}".format(end - start, num_workers))
+    print("Finish with: {} seconds, num_workers={}".format(end - start, num_workers))
 print("Optimal num_workers is {}".format(optimal_num_workers))
