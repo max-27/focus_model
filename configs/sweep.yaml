@@ -1,5 +1,5 @@
 program: src/train.py
-project: Test
+project: FocusModelPatches
 name: transfer_sweep
 method: bayes
 metric:
@@ -28,8 +28,10 @@ parameters:
     value: 100
   datamodule.num_workers:
     value: 20
-  model.net.transfer:
+  datamodule.select_patches_grid:
     value: True
+  model.net.transfer:
+    value: False
   paths.data_dir:
     value: /n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset/
 
