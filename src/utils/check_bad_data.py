@@ -1,6 +1,7 @@
 from skimage import io
 import glob 
 import os
+import numpy as np
 
 
 def check():
@@ -17,7 +18,8 @@ def check():
             counter += 1
         if idx%10000 == 0:
             print(bad_img_list)
-    print(bad_img_list)
+    with open("/home/maf4031/focus_model/src/utils/bad_img_list.npy", "wb") as f:
+        np.save(f, bad_img_list)
 
 
 if __name__ == "__main__":
