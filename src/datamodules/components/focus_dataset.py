@@ -35,7 +35,7 @@ class FocusDataset(Dataset):
 
     def __getitem__(self, idx):
         patch = np.array(io.imread(self.array_images[idx]))
-        label = np.array([self.array_labels[idx] * 3.4])  # one distance value is 3.4um
+        label = np.array([self.array_labels[idx] * 3.4])  # one distance unit is 3.4um
         
         if self.transform:
             patch = self.transform(patch)
@@ -47,17 +47,18 @@ class FocusDataset(Dataset):
         return patch, label
 
     def find_files(self) -> None:
-        self.array_images = glob.glob(os.path.join(self.data_dir,'*distance*.jpg')) #TODO add / to distance path
+        self.array_images = glob.glob(os.path.join(self.data_dir,'*/*/distance*.jpg'))
         self.array_labels = [int(re.findall(r"-?\d+", path)[-1]) for path in self.array_images]
     
     def find_files_by_sample(self, subsample_size: int = 20) -> None:
-        samples = glob.glob(os.path.join(self.data_dir,'sample*'))
-        for sample in samples:
-            images = glob.glob(os.path.join(sample,'*distance*.jpg'))
-            labels = [int(re.findall(r"-?\d+", path)[-1]) for path in images]
-            sampled_images, samples_labels = self._sample_images(images, labels, subsample_size)
-            self.array_images.extend(sampled_images)
-            self.array_labels.extend(samples_labels)
+        for sample_box in next(os.walk(self.data_dir))[1]:
+            samples = glob.glob(os.path.join(self.data_dir, sample_box,'sample*'))
+            for sample in samples:
+                images = glob.glob(os.path.join(sample,'*distance*.jpg'))
+                labels = [int(re.findall(r"-?\d+", path)[-1]) for path in images]
+                sampled_images, samples_labels = self._sample_images(images, labels, subsample_size)
+                self.array_images.extend(sampled_images)
+                self.array_labels.extend(samples_labels)
     
     def _sample_images(self, images: List, labels: List, subsample_size: int = 50) -> Tuple[List, List]:
         """Sample images with positive and negative distance values."""
@@ -78,5 +79,6 @@ class FocusDataset(Dataset):
 
 
 if __name__ == "__main__":
-    dataset = FocusDataset(data_dir="/Volumes/FOCUS/Inflammation2_665716", subsample=True, subsample_size=20)
+    dataset = FocusDataset(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset", subsample=False, subsample_size=20)
     x, y = dataset[0]
+    a = 1

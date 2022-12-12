@@ -97,7 +97,7 @@ class FocusDataModule(LightningDataModule):
 
 
 if __name__ == "__main__":
-    datamodule = FocusDataModule()
+    datamodule = FocusDataModule(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset", subsample=True)
     datamodule.setup()
     train_loader = datamodule.train_dataloader()
     a = 1
