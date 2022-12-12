@@ -31,6 +31,7 @@ class FocusDataModule(LightningDataModule):
         subsample_size: int = 50,
         image_size: List = [1280, 720],
         resize_scaling_factor: float = 0.2,
+        select_patches_grid: bool = False,
     ):
         super().__init__()
 
@@ -40,7 +41,7 @@ class FocusDataModule(LightningDataModule):
         h_scaled = int(h * resize_scaling_factor)
         self.transforms = transforms.Compose([
             transforms.ToTensor(), 
-            transforms.Resize(size=(h_scaled, w_scaled), interpolation=InterpolationMode.BILINEAR),
+            #transforms.Resize(size=(h_scaled, w_scaled), interpolation=InterpolationMode.BILINEAR),
             transforms.Normalize((0), (1)),
         ])
         #self.transforms = None
@@ -53,7 +54,7 @@ class FocusDataModule(LightningDataModule):
     
     def setup(self, stage: Optional[str] = None) -> None:
         if not self.data_train and not self.data_val and not self.data_test:
-            dataset = FocusDataset(self.hparams.data_dir, transform=self.transforms, subsample=self.hparams.subsample, subsample_size=self.hparams.subsample_size)
+            dataset = FocusDataset(self.hparams.data_dir, transform=self.transforms, subsample=self.hparams.subsample, subsample_size=self.hparams.subsample_size, select_patches_grid=self.hparams.select_patches_grid)
             len_dataset = len(dataset)
             train_size = int(len_dataset * self.hparams.splits[0])
             val_size = int(len_dataset * self.hparams.splits[1])
@@ -97,7 +98,7 @@ class FocusDataModule(LightningDataModule):
 
 
 if __name__ == "__main__":
-    datamodule = FocusDataModule()
+    datamodule = FocusDataModule(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset", subsample=True)
     datamodule.setup()
     train_loader = datamodule.train_dataloader()
     a = 1

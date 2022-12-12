@@ -1,5 +1,5 @@
 program: src/train.py
-project: Test
+project: FocusModelPatches
 name: transfer_sweep
 method: bayes
 metric:
@@ -11,27 +11,29 @@ parameters:
   trainer.devices:
     value: 1
   trainer.max_epochs:
-    value: 500
-  trainer.gradient_clip_val:
-    value: 0.5
+    value: 150
+  #trainer.gradient_clip_val:
+  #  value: 0.5
   model.optimizer.lr:
     min: 0.00001
-    max: 0.0001
+    max: 0.001
   model.optimizer.weight_decay:
     min: 0.04
     max: 0.05
   datamodule.batch_size:
-    values: [8]
+    values: [8, 16, 32, 64]
   datamodule.subsample: 
     value: True
   datamodule.subsample_size: 
-    value: 1
+    value: 100
   datamodule.num_workers:
-    value: 2
-  model.net.transfer:
+    value: 20
+  datamodule.select_patches_grid:
     value: True
+  model.net.transfer:
+    value: False
   paths.data_dir:
-    value: /n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset/Inflammation2_665716
+    value: /n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset/
 
 command:
   - ${env}

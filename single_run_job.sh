@@ -7,7 +7,8 @@
 #SBATCH -o logs/hostname_%j.out
 #SBATCH -e logs/hostname_%j.err
 
-module restore training_max
+module load gcc/6.2.0
+module load cuda/10.1
+module load miniconda3/4.10.3
 source activate focus
-conda info
-wandb agent djchewbacca/FocusModelResize/41537j33
+python src/train.py
