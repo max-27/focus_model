@@ -72,7 +72,7 @@ class FocusDataset(Dataset):
         if type(patch) != torch.Tensor:
             patch = transforms.ToTensor()(patch)
         if type(label) != torch.Tensor:
-            label = torch.tensor(label, dtype=torch.float)
+            label = torch.tensor(label, dtype=torch.float) / 17000  # scale labels to -1 to 1
         return patch, label
 
     def find_files(self) -> None:
@@ -164,6 +164,9 @@ class FocusDataset(Dataset):
 
 
 if __name__ == "__main__":
-    dataset = FocusDataset(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset", subsample=True, subsample_size=100, select_patches_grid=True)
+    subsample_size = 100
+    dataset = FocusDataset(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset", subsample=True, subsample_size=subsample_size, select_patches_grid=True)
+    torch.save(dataset, f"/home/maf4031/focus_model/data/datasets/dataset_subsample{subsample_size}_grid.pt")
     x, y = dataset[0]
     a = 1
+    

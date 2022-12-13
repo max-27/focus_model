@@ -1,5 +1,6 @@
 _target_: src.datamodules.focus_datamodule.FocusDataModule
 data_dir: ${paths.data_dir}
+dataset_dir: null
 batch_size: 1
 splits: [0.8, 0.1]
 num_workers: 0

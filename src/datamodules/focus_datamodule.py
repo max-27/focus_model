@@ -23,6 +23,7 @@ class FocusDataModule(LightningDataModule):
     def __init__(
         self,
         data_dir: str = "data/",
+        dataset_dir: str = None,
         splits: Tuple[float, float] = [0.8, 0.1],
         batch_size: int = 64,
         num_workers: int = 0,
@@ -40,6 +41,8 @@ class FocusDataModule(LightningDataModule):
         w, h = image_size
         w_scaled = int(w * resize_scaling_factor)
         h_scaled = int(h * resize_scaling_factor)
+        self.dataset_dir = dataset_dir
+
         self.transforms = transforms.Compose([
             transforms.ToTensor(), 
             #transforms.Resize(size=(h_scaled, w_scaled), interpolation=InterpolationMode.BILINEAR),
@@ -55,7 +58,12 @@ class FocusDataModule(LightningDataModule):
     
     def setup(self, stage: Optional[str] = None) -> None:
         if not self.data_train and not self.data_val and not self.data_test:
-            dataset = FocusDataset(self.hparams.data_dir, transform=self.transforms, subsample=self.hparams.subsample, subsample_size=self.hparams.subsample_size, select_patches_grid=self.hparams.select_patches_grid)
+            if self.dataset_dir is not None:
+                dataset = torch.load(self.hparams.dataset_dir)
+                print(11111111111)
+            else:
+                print(222222222)
+                dataset = FocusDataset(self.hparams.data_dir, transform=self.transforms, subsample=self.hparams.subsample, subsample_size=self.hparams.subsample_size, select_patches_grid=self.hparams.select_patches_grid)
             len_dataset = len(dataset)
             train_size = int(len_dataset * self.hparams.splits[0])
             val_size = int(len_dataset * self.hparams.splits[1])
@@ -99,7 +107,11 @@ class FocusDataModule(LightningDataModule):
 
 
 if __name__ == "__main__":
-    datamodule = FocusDataModule(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset", subsample=True)
+    datamodule = FocusDataModule(
+        data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset",
+        dataset_dir="/home/maf4031/focus_model/data/datasets/dataset_subsample100_grid.pt",
+        subsample=True,
+        )
     datamodule.setup()
     train_loader = datamodule.train_dataloader()
     a = 1

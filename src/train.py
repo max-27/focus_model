@@ -17,6 +17,7 @@ from pytorch_lightning import Callback, LightningDataModule, LightningModule, Tr
 from pytorch_lightning.loggers import LightningLoggerBase
 
 from src import utils
+from src.datamodules.components.focus_dataset import FocusDataset # pylint: disable=unused-import
 
 log = utils.get_pylogger(__name__)
 
