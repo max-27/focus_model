@@ -32,6 +32,7 @@ class FocusDataModule(LightningDataModule):
         image_size: List = [1280, 720],
         resize_scaling_factor: float = 0.2,
         select_patches_grid: bool = False,
+        select_patches_random: bool = False,
     ):
         super().__init__()
 

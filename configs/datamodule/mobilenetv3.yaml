@@ -6,3 +6,5 @@ num_workers: 0
 pin_memory: False
 subsample: False
 subsample_size: 50
+select_patches_grid: False
+select_patches_random: False
