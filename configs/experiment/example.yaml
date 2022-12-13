@@ -34,7 +34,9 @@ datamodule:
   batch_size: 8
   subsample: True
   # how many images from the left and right of the optimal focus point e.g. subsample_size = 50 --> 50 images left and 50 images right + optimal focused image
-  subsample_size: 100
+  subsample_size: 1
+  dataset_dir: "/home/maf4031/focus_model/data/datasets/dataset_subsample100_grid.pt"
+
 
 logger:
   wandb:
