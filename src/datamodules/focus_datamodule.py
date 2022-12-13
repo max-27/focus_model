@@ -60,9 +60,7 @@ class FocusDataModule(LightningDataModule):
         if not self.data_train and not self.data_val and not self.data_test:
             if self.dataset_dir is not None:
                 dataset = torch.load(self.hparams.dataset_dir)
-                print(11111111111)
             else:
-                print(222222222)
                 dataset = FocusDataset(self.hparams.data_dir, transform=self.transforms, subsample=self.hparams.subsample, subsample_size=self.hparams.subsample_size, select_patches_grid=self.hparams.select_patches_grid)
             len_dataset = len(dataset)
             train_size = int(len_dataset * self.hparams.splits[0])
