@@ -46,6 +46,9 @@ class FocusDataModule(LightningDataModule):
         self.transforms = transforms.Compose([
             transforms.ToTensor(), 
             #transforms.Resize(size=(h_scaled, w_scaled), interpolation=InterpolationMode.BILINEAR),
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.RandomVerticalFlip(p=0.5),
+            transforms.RandomRotation(degrees=90),
             transforms.Normalize((0), (1)),
         ])
         #self.transforms = None
