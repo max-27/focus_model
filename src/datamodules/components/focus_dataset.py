@@ -72,7 +72,7 @@ class FocusDataset(Dataset):
         if type(patch) != torch.Tensor:
             patch = transforms.ToTensor()(patch)
         if type(label) != torch.Tensor:
-            label = torch.tensor(label, dtype=torch.float) / 17000  # scale labels to -1 to 1
+            label = torch.tensor(label, dtype=torch.float)
         return patch, label
 
     def find_files(self) -> None:
