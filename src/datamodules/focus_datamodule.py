@@ -9,13 +9,39 @@ root = pyrootutils.setup_root(
 
 
 from typing import Any, Dict, Optional, Tuple, List
-
+import hydra
 import torch
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import ConcatDataset, DataLoader, Dataset, random_split
 from torchvision.transforms import transforms
 from torchvision.transforms.functional import InterpolationMode
 from src.datamodules.components.focus_dataset import FocusDataset
+
+
+class Transformation:
+    def __init__(
+        self,
+        params: Dict[str, Any],
+    ):
+        transformation_list = [transforms.ToTensor()]
+        if params.horizontal_flip:
+            transformation_list.append(transforms.RandomHorizontalFlip(p=0.5))
+        if params.vertical_flip:
+            transformation_list.append(transforms.RandomVerticalFlip(p=0.5))
+        if params.rotation:
+            transformation_list.append(transforms.RandomRotation(degrees=params.rotation_degrees))
+        if params.perspective:
+            transformation_list.append(transforms.RandomPerspective(*params.perspective_parameters))
+        if params.color_jitter:
+            transformation_list.append(transforms.ColorJitter(*params.color_jitter_parameters))
+        if params.random_erasing:
+            transformation_list.append(transforms.RandomErasing(p=1.,scale=(0.02, 0.1)))
+        if params.normalize:
+            transformation_list.append(transforms.Normalize((0), (1)))
+        self.transforms = transforms.Compose([*transformation_list])
+    
+    def __call__(self, x):
+        return self.transforms(x)
 
 
 class FocusDataModule(LightningDataModule):
@@ -33,6 +59,7 @@ class FocusDataModule(LightningDataModule):
         resize_scaling_factor: float = 0.2,
         select_patches_grid: bool = False,
         select_patches_random: bool = False,
+        transformations: Optional[Transformation] = None,
     ):
         super().__init__()
 
@@ -42,18 +69,21 @@ class FocusDataModule(LightningDataModule):
         h_scaled = int(h * resize_scaling_factor)
         self.dataset_dir = dataset_dir
 
-        self.transforms = transforms.Compose([
-            transforms.ToTensor(), 
-            transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomVerticalFlip(p=0.5),
-            transforms.RandomRotation(degrees=90),
-            transforms.RandomPerspective(distortion_scale=0.1, p=0.5),
-            #transforms.RandomAutocontrast(p=0.5),
-            transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.2),
-            transforms.RandomErasing(p=1.,scale=(0.02, 0.1)),
-            transforms.Normalize((0), (1)),
-        ])
-        #self.transforms = None
+        if transformations is None:
+            self.transforms = transforms.Compose([
+                transforms.ToTensor(), 
+                transforms.RandomHorizontalFlip(p=0.5),
+                transforms.RandomVerticalFlip(p=0.5),
+                transforms.RandomRotation(degrees=90),
+                transforms.RandomPerspective(distortion_scale=0.1, p=0.5),
+                #transforms.RandomAutocontrast(p=0.5),
+                transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.2),
+                transforms.RandomErasing(p=1.,scale=(0.02, 0.1)),
+                transforms.Normalize((0), (1)),
+            ])
+        else:
+            self.transforms = self.hparams.transformations
+
         self.data_train: Optional[Dataset] = None
         self.data_val: Optional[Dataset] = None
         self.data_test: Optional[Dataset] = None

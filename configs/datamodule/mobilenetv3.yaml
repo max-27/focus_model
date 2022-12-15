@@ -1,4 +1,18 @@
 _target_: src.datamodules.focus_datamodule.FocusDataModule
+transformations:
+  _target_: src.datamodules.focus_datamodule.Transformation
+  params:
+    horizontal_flip: True
+    vertical_flip: True
+    rotation: True
+    rotation_degrees: 90
+    perspective: True
+    perspective_parameters: [0.1, 0.5]
+    autocontrast: True
+    color_jitter: True
+    color_jitter_parameters: [0.5, 0.5, 0.5, 0.1]
+    random_erasing: True
+    normalize: True  
 data_dir: ${paths.data_dir}
 dataset_dir: null
 batch_size: 1
