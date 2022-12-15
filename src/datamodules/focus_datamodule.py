@@ -70,17 +70,7 @@ class FocusDataModule(LightningDataModule):
         self.dataset_dir = dataset_dir
 
         if transformations is None:
-            self.transforms = transforms.Compose([
-                transforms.ToTensor(), 
-                transforms.RandomHorizontalFlip(p=0.5),
-                transforms.RandomVerticalFlip(p=0.5),
-                transforms.RandomRotation(degrees=90),
-                transforms.RandomPerspective(distortion_scale=0.1, p=0.5),
-                #transforms.RandomAutocontrast(p=0.5),
-                transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.2),
-                transforms.RandomErasing(p=1.,scale=(0.02, 0.1)),
-                transforms.Normalize((0), (1)),
-            ])
+            self.transforms = None
         else:
             self.transforms = self.hparams.transformations
 
