@@ -141,11 +141,13 @@ def log_hyperparameters(object_dict: dict) -> None:
     cfg = object_dict["cfg"]
     model = object_dict["model"]
     trainer = object_dict["trainer"]
+    transforms = object_dict["transforms"]
 
     if not trainer.logger:
         log.warning("Logger not found! Skipping hyperparameter logging...")
         return
 
+    hparams["transforms"] = transforms
     hparams["model"] = cfg["model"]
 
     # save number of model parameters
