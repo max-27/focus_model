@@ -19,7 +19,6 @@ from src.datamodules.components.focus_dataset import FocusDataset
 
 
 class FocusDataModule(LightningDataModule):
-
     def __init__(
         self,
         data_dir: str = "data/",
@@ -45,10 +44,13 @@ class FocusDataModule(LightningDataModule):
 
         self.transforms = transforms.Compose([
             transforms.ToTensor(), 
-            #transforms.Resize(size=(h_scaled, w_scaled), interpolation=InterpolationMode.BILINEAR),
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.RandomVerticalFlip(p=0.5),
             transforms.RandomRotation(degrees=90),
+            transforms.RandomPerspective(distortion_scale=0.1, p=0.5),
+            #transforms.RandomAutocontrast(p=0.5),
+            transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.2),
+            transforms.RandomErasing(p=1.,scale=(0.02, 0.1)),
             transforms.Normalize((0), (1)),
         ])
         #self.transforms = None
