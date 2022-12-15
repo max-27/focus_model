@@ -10,6 +10,7 @@ root = pyrootutils.setup_root(
 
 import torch
 from torch.utils.data import Dataset
+import pytorch_lightning as pl
 from skimage import io
 import os
 import glob
@@ -164,6 +165,7 @@ class FocusDataset(Dataset):
 
 
 if __name__ == "__main__":
+    pl.seed_everything(42, workers=True)
     subsample_size = 100
     dataset = FocusDataset(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset", subsample=True, subsample_size=subsample_size, select_patches_grid=True, patch_size=[360, 256])
     torch.save(dataset, f"/home/maf4031/focus_model/data/datasets/dataset_subsample{subsample_size}_grid_new.pt")
