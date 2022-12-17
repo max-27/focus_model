@@ -1,17 +1,34 @@
+# TODOs before submitting a sweep
+# 1. Is all code committed?
+#   --> create new sweep branch to run from!
+# 2. Was the code tested? 
+# 3. Check if all default values make sense/are desired
+# 4. Is the run correctly specified?
+#    --> project 
+#    --> name
+#    --> tags
+#    --> task name (DON'T change, only for specific reasons)
+# 5. Loading correct dataset?
+# 6. Check optimal number of workers for dataset
+# --> Let's go!
+
 program: src/train.py
-project: FocusModelPatchesScaledLabels
-name: transfer_sweep
+project: Test123
+name: test123
+tags: [""]
 method: bayes
 metric:
   name: val/loss
   goal: minimize
 parameters:
+  task_name: 
+    value: wandb_sweep
   trainer.accelerator:
     value: gpu
   trainer.devices:
     value: 1
   trainer.max_epochs:
-    value: 150
+    value: 100
   #trainer.gradient_clip_val:
   #  value: 0.5
   model.optimizer.lr:
@@ -31,7 +48,7 @@ parameters:
   datamodule.select_patches_grid:
     value: True
   datamodule.dataset_dir:
-    value: /home/maf4031/focus_model/data/datasets/dataset_subsample100_grid.pt
+    value: /home/maf4031/focus_model/data/datasets/dataset_subsample100_grid_new.pt
   model.net.transfer:
     value: False
   paths.data_dir:

@@ -9,8 +9,8 @@ root = pyrootutils.setup_root(
 
 
 from typing import Any, Dict, Optional, Tuple, List
-
 import torch
+import os
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import ConcatDataset, DataLoader, Dataset, random_split
 from torchvision.transforms import transforms
@@ -18,8 +18,33 @@ from torchvision.transforms.functional import InterpolationMode
 from src.datamodules.components.focus_dataset import FocusDataset
 
 
-class FocusDataModule(LightningDataModule):
+class Transformation:
+    def __init__(
+        self,
+        params: Dict[str, Any],
+    ):
+        transformation_list = [transforms.ToTensor()]
+        if params.horizontal_flip:
+            transformation_list.append(transforms.RandomHorizontalFlip(p=0.5))
+        if params.vertical_flip:
+            transformation_list.append(transforms.RandomVerticalFlip(p=0.5))
+        if params.rotation:
+            transformation_list.append(transforms.RandomRotation(degrees=params.rotation_degrees))
+        if params.perspective:
+            transformation_list.append(transforms.RandomPerspective(*params.perspective_parameters))
+        if params.color_jitter:
+            transformation_list.append(transforms.ColorJitter(*params.color_jitter_parameters))
+        if params.random_erasing:
+            transformation_list.append(transforms.RandomErasing(p=1.,scale=(0.02, 0.1)))
+        if params.normalize:
+            transformation_list.append(transforms.Normalize((0), (1)))
+        self.transforms = transforms.Compose([*transformation_list])
+    
+    def __call__(self, x):
+        return self.transforms(x)
 
+
+class FocusDataModule(LightningDataModule):
     def __init__(
         self,
         data_dir: str = "data/",
@@ -34,24 +59,21 @@ class FocusDataModule(LightningDataModule):
         resize_scaling_factor: float = 0.2,
         select_patches_grid: bool = False,
         select_patches_random: bool = False,
+        transformations: Optional[Transformation] = None,
+        **kwargs,
     ):
         super().__init__()
-
         self.save_hyperparameters(logger=False)
+
         w, h = image_size
         w_scaled = int(w * resize_scaling_factor)
         h_scaled = int(h * resize_scaling_factor)
-        self.dataset_dir = dataset_dir
 
-        self.transforms = transforms.Compose([
-            transforms.ToTensor(), 
-            #transforms.Resize(size=(h_scaled, w_scaled), interpolation=InterpolationMode.BILINEAR),
-            transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomVerticalFlip(p=0.5),
-            transforms.RandomRotation(degrees=90),
-            transforms.Normalize((0), (1)),
-        ])
-        #self.transforms = None
+        if transformations is None:
+            self.transforms = None
+        else:
+            self.transforms = self.hparams.transformations
+
         self.data_train: Optional[Dataset] = None
         self.data_val: Optional[Dataset] = None
         self.data_test: Optional[Dataset] = None
@@ -61,7 +83,7 @@ class FocusDataModule(LightningDataModule):
     
     def setup(self, stage: Optional[str] = None) -> None:
         if not self.data_train and not self.data_val and not self.data_test:
-            if self.dataset_dir is not None:
+            if self.hparams.dataset_dir is not None and os.path.exists(self.hparams.dataset_dir):
                 dataset = torch.load(self.hparams.dataset_dir)
             else:
                 dataset = FocusDataset(self.hparams.data_dir, transform=self.transforms, subsample=self.hparams.subsample, subsample_size=self.hparams.subsample_size, select_patches_grid=self.hparams.select_patches_grid)

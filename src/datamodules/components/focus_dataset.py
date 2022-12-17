@@ -10,14 +10,16 @@ root = pyrootutils.setup_root(
 
 import torch
 from torch.utils.data import Dataset
+import pytorch_lightning as pl
 from skimage import io
 import os
 import glob
 import numpy as np
 from torchvision.transforms import transforms
 import re
-from typing import List, Tuple
+from typing import List, Tuple, Callable
 from src.utils.color_filter import ColorFilter
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 
 
 class FocusDataset(Dataset):
@@ -29,7 +31,8 @@ class FocusDataset(Dataset):
         subsample_size: int = 20, 
         select_patches_random: bool = False,
         select_patches_grid: bool = False,
-        patch_size: List =  [256, 256], 
+        patch_size: List =  [360, 256],
+        image_size: List = [720, 1280],
         patch_num: int = 10,
         ) -> None:
         super().__init__()
@@ -40,14 +43,14 @@ class FocusDataset(Dataset):
         self.transform = transform
         self.array_images, self.array_labels = [], []
         if subsample:
-            self.find_files_by_sample(subsample_size)
+            self._find_files_by_sample(subsample_size)
         else:
-            self.find_files()
+            self._find_files()
 
         if select_patches_random:
-            self._select_patches_from_random(patch_size, patch_num)
+            self._select_patches(self._select_patches_randomly)
         elif select_patches_grid:
-            self._select_patches_from_grid(patch_size)
+            self._select_patches(self._select_patches_from_grid)
 
         if len(self.array_images) != len(self.array_labels):
             raise ValueError("Number of images and labels do not match.")
@@ -72,14 +75,14 @@ class FocusDataset(Dataset):
         if type(patch) != torch.Tensor:
             patch = transforms.ToTensor()(patch)
         if type(label) != torch.Tensor:
-            label = torch.tensor(label, dtype=torch.float) / 17000  # scale labels to -1 to 1
+            label = torch.tensor(label, dtype=torch.float)
         return patch, label
 
-    def find_files(self) -> None:
+    def _find_files(self) -> None:
         self.array_images = glob.glob(os.path.join(self.data_dir,'*/*/distance*.jpg'))
         self.array_labels = [int(re.findall(r"-?\d+", path)[-1]) for path in self.array_images]
     
-    def find_files_by_sample(self, subsample_size: int = 20) -> None:
+    def _find_files_by_sample(self, subsample_size: int = 20) -> None:
         for sample_box in next(os.walk(self.data_dir))[1]:
             samples = glob.glob(os.path.join(self.data_dir, sample_box,'sample*'))
             for sample in samples:
@@ -106,67 +109,78 @@ class FocusDataset(Dataset):
         neg_labels = [int(re.findall(r"-?\d+", path)[-1]) for path in neg_images]
         return [*pos_images, *neg_images, optimal_img], [*pos_labels, *neg_labels, 0]
 
-    def _select_patches_randomly(self, patch_size: List = [256, 256], patch_num: int = 10, threshold: float = 5.) -> None:
+    def _select_patches(self, select_func: Callable) -> None:
+        patch_array, label_array = [], []
+        for idx, img in enumerate(self.array_images):
+            patches, labels = self._select_patches_from_grid(img)
+            patch_array.extend(patches)
+            label_array.extend(labels)
+            if idx%10000 == 0:
+                print(f"Processed {idx+1} images")
+        self.array_images = patch_array
+        self.array_labels = label_array
+
+    def _select_patches_randomly(self, img_path: str, patch_size: List = [360, 256], patch_num: int = 10, threshold: float = 5.) -> List:
         # select random patches randomly from each image
         patches = []
         patch_labels = []
-        for img_path in self.array_images:
-            image = io.imread(img_path)
-            h, w, _ = image.shape
-            for _ in range(patch_num):
-                x = np.random.randint(int(patch_size[0]/2), h - patch_size[0])
-                y = np.random.randint(int(patch_size[1]/2), w - patch_size[1])
-                patch = image[x-int(patch_size[0]/2):x+int(patch_size[0]/2), y-int(patch_size[1]/2):y+int(patch_size[1]/2)]
-                if self.color_filter._get_sample_ratio(patch) >= threshold:
-                    patches.append((img_path, x, y))
-                    patch_labels.append(int(re.findall(r"-?\d+", img_path)[-1]))
-        self.array_images = patches
-        self.array_labels = patch_labels
-    
-    def _select_patches_from_grid(self, patch_size: List = [256, 256], threshold: float = 5.) -> None:
+        image = io.imread(img_path)
+        h, w, _ = image.shape
+        for _ in range(patch_num):
+            x = np.random.randint(int(patch_size[0]/2), h - patch_size[0])
+            y = np.random.randint(int(patch_size[1]/2), w - patch_size[1])
+            patch = image[x-int(patch_size[0]/2):x+int(patch_size[0]/2), y-int(patch_size[1]/2):y+int(patch_size[1]/2)]
+            if self.color_filter._get_sample_ratio(patch) >= threshold:
+                patches.append((img_path, x, y))
+                patch_labels.append(int(re.findall(r"-?\d+", img_path)[-1]))
+        return patches, patch_labels
+
+    def _select_patches_from_grid(self, img_path: str, patch_size: List = [360, 256], image_size: List = [720, 1280], threshold: float = 5.) -> List:
         # select patches from a grid from each image
+        h, w = image_size
+        x_steps = int(h / patch_size[0])
+        y_steps = int(w / patch_size[1])
+        x_coord = np.linspace(int(patch_size[0]/2), h - int(patch_size[0]/2), x_steps)
+        y_coord = np.linspace(int(patch_size[1]/2), w - int(patch_size[1]/2), y_steps)
+        patch_coords = [(x, y) for x in x_coord for y in y_coord]
+
         patches = []
         patch_labels = []
-        for img_path in self.array_images:
-            image = io.imread(img_path)
-            h, w, _ = image.shape
-            x_steps = int(h / patch_size[0])
-            y_steps = int(w / patch_size[1])
-            x_coord = np.linspace(int(patch_size[0]/2), h - int(patch_size[0]/2), x_steps)
-            y_coord = np.linspace(int(patch_size[1]/2), w - int(patch_size[1]/2), y_steps)
-            for x in x_coord:
-                for y in y_coord:
-                    patch = image[int(x-int(patch_size[0]/2)):int(x+int(patch_size[0]/2)), int(y-int(patch_size[1]/2)):int(y+int(patch_size[1]/2))]
-                    sample_ratio = self.color_filter._get_sample_ratio(patch)
-                    if sample_ratio >= threshold:
-                        patches.append((img_path, int(x), int(y)))
-                        patch_labels.append(int(re.findall(r"-?\d+", img_path)[-1]))
-            if len(patches) < 5:
-                curr_max_sample_ratio = 0
-                curr_max_patch = None
-                x_coord = int(h/2)
-                y_coord = np.linspace(int(patch_size[1]), w - patch_size[1], y_steps)
-                for x in x_coord:
-                    for y in y_coord:
-                        patch = image[int(x-int(patch_size[0]/2)):int(x+int(patch_size[0]/2)), int(y-int(patch_size[1]/2)):int(y+int(patch_size[1]/2))]
-                        sample_ratio = self.color_filter._get_sample_ratio(patch)
-                        if sample_ratio > curr_max_sample_ratio:
-                            curr_max_sample_ratio = sample_ratio
-                            curr_max_patch = (x, y)
-                        if sample_ratio >= threshold:
-                            patches.append((img_path, int(x), int(y)))
-                            patch_labels.append(int(re.findall(r"-?\d+", img_path)[-1]))
-            if len(patches) < 5:
-                patches.append((img_path, *curr_max_patch))
+        image = io.imread(img_path)
+        for x, y in patch_coords:
+            patch = image[int(x-int(patch_size[0]/2)):int(x+int(patch_size[0]/2)), int(y-int(patch_size[1]/2)):int(y+int(patch_size[1]/2))]
+            sample_ratio = self.color_filter._get_sample_ratio(patch)
+            if sample_ratio >= threshold:
+                patches.append((img_path, int(x), int(y)))
                 patch_labels.append(int(re.findall(r"-?\d+", img_path)[-1]))
-        self.array_images = patches
-        self.array_labels = patch_labels
+        if len(patches) < 5:
+            curr_max_sample_ratio = 0
+            curr_max_patch = None
+            x_coord = int(h/2)
+            y_coord = np.linspace(int(patch_size[1]), w - patch_size[1], y_steps)[:-1]
+            alt_patch_coords = [(x,y) for y in y_coord]
+            for x, y in alt_patch_coords:
+                patch = image[int(x-int(patch_size[0]/2)):int(x+int(patch_size[0]/2)), int(y-int(patch_size[1]/2)):int(y+int(patch_size[1]/2))]
+                sample_ratio = self.color_filter._get_sample_ratio(patch)
+                if sample_ratio > curr_max_sample_ratio:
+                    curr_max_sample_ratio = sample_ratio
+                    curr_max_patch = (x, y)
+                if sample_ratio >= threshold:
+                    patches.append((img_path, int(x), int(y)))
+                    patch_labels.append(int(re.findall(r"-?\d+", img_path)[-1]))
+        if len(patches) < 5:
+            patches.append((img_path, *curr_max_patch))
+            patch_labels.append(int(re.findall(r"-?\d+", img_path)[-1]))
+        return patches, patch_labels
 
 
 if __name__ == "__main__":
+    import time
+    pl.seed_everything(42, workers=True)
     subsample_size = 100
+    start_time = time.time()
     dataset = FocusDataset(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset", subsample=True, subsample_size=subsample_size, select_patches_grid=True, patch_size=[360, 256])
-    torch.save(dataset, f"/home/maf4031/focus_model/data/datasets/dataset_subsample{subsample_size}_grid_new.pt")
-    x, y = dataset[0]
-    a = 1
+    print(f"Time to load dataset: {time.time() - start_time}")
+    #torch.save(dataset, f"/home/maf4031/focus_model/data/datasets/dataset_subsample{subsample_size}_grid1.pt")
+    torch.save(dataset, f"/home/maf4031/focus_model/data/datasets/dataset_subsample{subsample_size}_grid_complete.pt")
     
