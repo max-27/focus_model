@@ -13,9 +13,9 @@
 # --> Let's go!
 
 program: src/train.py
-project: Test123
-name: test123
-tags: [""]
+project: SweepFocusModel
+name: SweepFocusModel
+tags: ["CompleteData", "GridPatches", "Subsample100"]
 method: bayes
 metric:
   name: val/loss
@@ -37,6 +37,8 @@ parameters:
   model.optimizer.weight_decay:
     min: 0.01
     max: 0.05
+  model.net.transfer:
+    value: False
   datamodule.batch_size:
     values: [8, 16, 32, 64]
   datamodule.subsample: 
@@ -48,9 +50,7 @@ parameters:
   datamodule.select_patches_grid:
     value: True
   datamodule.dataset_dir:
-    value: /home/maf4031/focus_model/data/datasets/dataset_subsample100_grid_new.pt
-  model.net.transfer:
-    value: False
+    value: /home/maf4031/focus_model/data/datasets/dataset_subsample100_grid_complete.pt
   paths.data_dir:
     value: /n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset/
 
