@@ -9,8 +9,8 @@ root = pyrootutils.setup_root(
 
 
 from typing import Any, Dict, Optional, Tuple, List
-import hydra
 import torch
+import os
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import ConcatDataset, DataLoader, Dataset, random_split
 from torchvision.transforms import transforms
@@ -60,14 +60,14 @@ class FocusDataModule(LightningDataModule):
         select_patches_grid: bool = False,
         select_patches_random: bool = False,
         transformations: Optional[Transformation] = None,
+        **kwargs,
     ):
         super().__init__()
-
         self.save_hyperparameters(logger=False)
+
         w, h = image_size
         w_scaled = int(w * resize_scaling_factor)
         h_scaled = int(h * resize_scaling_factor)
-        self.dataset_dir = dataset_dir
 
         if transformations is None:
             self.transforms = None
@@ -83,7 +83,7 @@ class FocusDataModule(LightningDataModule):
     
     def setup(self, stage: Optional[str] = None) -> None:
         if not self.data_train and not self.data_val and not self.data_test:
-            if self.dataset_dir is not None:
+            if self.hparams.dataset_dir is not None and os.path.exists(self.hparams.dataset_dir):
                 dataset = torch.load(self.hparams.dataset_dir)
             else:
                 dataset = FocusDataset(self.hparams.data_dir, transform=self.transforms, subsample=self.hparams.subsample, subsample_size=self.hparams.subsample_size, select_patches_grid=self.hparams.select_patches_grid)
