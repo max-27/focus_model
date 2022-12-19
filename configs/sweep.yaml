@@ -15,7 +15,7 @@ description: Sweep on on subset of whole training data
 
 program: src/train.py
 project: SweepFocusModel
-name: SweepFocusModel
+name: SweepFocusModelSubset
 method: bayes
 metric:
   name: val/loss
