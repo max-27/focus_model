@@ -177,7 +177,7 @@ class FocusDataset(Dataset):
 if __name__ == "__main__":
     import time
     pl.seed_everything(42, workers=True)
-    subsample_size = 100
+    subsample_size = 10
     start_time = time.time()
     dataset = FocusDataset(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset", subsample=True, subsample_size=subsample_size, select_patches_grid=True, patch_size=[360, 256])
     print(f"Time to load dataset: {time.time() - start_time}")
