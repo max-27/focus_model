@@ -46,7 +46,7 @@ parameters:
   datamodule.subsample_size: 
     value: 10
   datamodule.num_workers:
-    value: 20
+    value: 40
   datamodule.select_patches_grid:
     value: True
   datamodule.dataset_dir:
