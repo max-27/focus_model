@@ -24,6 +24,11 @@ class Transformation:
         params: Dict[str, Any],
     ):
         transformation_list = [transforms.ToTensor()]
+        if params.resize_img:
+            h, w = [720, 1280]
+            w_scaled = int(w * 0.3)
+            h_scaled = int(h * 0.3)
+            transformation_list.append(transforms.Resize((h_scaled, w_scaled), interpolation=InterpolationMode.BILINEAR))
         if params.horizontal_flip:
             transformation_list.append(transforms.RandomHorizontalFlip(p=0.5))
         if params.vertical_flip:
@@ -36,6 +41,7 @@ class Transformation:
             transformation_list.append(transforms.ColorJitter(*params.color_jitter_parameters))
         if params.random_erasing:
             transformation_list.append(transforms.RandomErasing(p=1.,scale=(0.02, 0.1)))
+
         if params.normalize:
             transformation_list.append(transforms.Normalize((0), (1)))
         self.transforms = transforms.Compose([*transformation_list])
