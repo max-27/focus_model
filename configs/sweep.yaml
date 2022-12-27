@@ -40,7 +40,7 @@ parameters:
   model.net.transfer:
     value: False
   datamodule.batch_size:
-    values: [32]
+    values: [64]
   datamodule.subsample: 
     value: True
   datamodule.subsample_size: 
