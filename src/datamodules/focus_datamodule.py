@@ -54,7 +54,7 @@ class FocusDataModule(LightningDataModule):
     def __init__(
         self,
         data_dir: str = "data/",
-        dataset_dir: str = None,
+        dataset_dir: str = "",
         splits: Tuple[float, float] = [0.8, 0.1],
         batch_size: int = 64,
         num_workers: int = 0,
@@ -75,9 +75,8 @@ class FocusDataModule(LightningDataModule):
         w_scaled = int(w * resize_scaling_factor)
         h_scaled = int(h * resize_scaling_factor)
 
-        if transformations is None:
-            self.transforms = None
-        else:
+        self.transforms = transformations
+        if self.transforms is None:
             self.transforms = self.hparams.transformations
 
         self.data_train: Optional[Dataset] = None
@@ -89,8 +88,9 @@ class FocusDataModule(LightningDataModule):
     
     def setup(self, stage: Optional[str] = None) -> None:
         if not self.data_train and not self.data_val and not self.data_test:
-            if self.hparams.dataset_dir is not None and os.path.exists(self.hparams.dataset_dir):
+            if os.path.exists(self.hparams.dataset_dir):
                 dataset = torch.load(self.hparams.dataset_dir)
+                dataset.transform = self.transforms
             else:
                 dataset = FocusDataset(self.hparams.data_dir, transform=self.transforms, subsample=self.hparams.subsample, subsample_size=self.hparams.subsample_size, select_patches_grid=self.hparams.select_patches_grid)
             len_dataset = len(dataset)
