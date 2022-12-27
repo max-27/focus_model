@@ -7,7 +7,7 @@ defaults:
   - datamodule: mobilenetv3.yaml
   - model: mobilenetv3.yaml
   - callbacks: default.yaml
-  - logger: wandb # set logger here or use command line (e.g. `python train.py logger=tensorboard`)
+  - logger: wandb 
   - trainer: default.yaml
   - paths: default.yaml
   - extras: default.yaml
@@ -15,7 +15,7 @@ defaults:
 
   # experiment configs allow for version control of specific hyperparameters
   # e.g. best hyperparameters for given model and datamodule
-  - experiment: example # --> outputs are saved in logs/experiments/
+  - experiment: null # --> outputs are saved in logs/experiments/
 
   # config for hyperparameter optimization
   - hparams_search: null

@@ -24,6 +24,11 @@ class Transformation:
         params: Dict[str, Any],
     ):
         transformation_list = [transforms.ToTensor()]
+        if params.resize_img:
+            h, w = [720, 1280]
+            w_scaled = int(w * 0.3)
+            h_scaled = int(h * 0.3)
+            transformation_list.append(transforms.Resize((h_scaled, w_scaled), interpolation=InterpolationMode.BILINEAR))
         if params.horizontal_flip:
             transformation_list.append(transforms.RandomHorizontalFlip(p=0.5))
         if params.vertical_flip:
@@ -36,6 +41,7 @@ class Transformation:
             transformation_list.append(transforms.ColorJitter(*params.color_jitter_parameters))
         if params.random_erasing:
             transformation_list.append(transforms.RandomErasing(p=1.,scale=(0.02, 0.1)))
+
         if params.normalize:
             transformation_list.append(transforms.Normalize((0), (1)))
         self.transforms = transforms.Compose([*transformation_list])
@@ -48,7 +54,7 @@ class FocusDataModule(LightningDataModule):
     def __init__(
         self,
         data_dir: str = "data/",
-        dataset_dir: str = None,
+        dataset_dir: str = "",
         splits: Tuple[float, float] = [0.8, 0.1],
         batch_size: int = 64,
         num_workers: int = 0,
@@ -69,9 +75,8 @@ class FocusDataModule(LightningDataModule):
         w_scaled = int(w * resize_scaling_factor)
         h_scaled = int(h * resize_scaling_factor)
 
-        if transformations is None:
-            self.transforms = None
-        else:
+        self.transforms = transformations
+        if self.transforms is None:
             self.transforms = self.hparams.transformations
 
         self.data_train: Optional[Dataset] = None
@@ -83,8 +88,9 @@ class FocusDataModule(LightningDataModule):
     
     def setup(self, stage: Optional[str] = None) -> None:
         if not self.data_train and not self.data_val and not self.data_test:
-            if self.hparams.dataset_dir is not None and os.path.exists(self.hparams.dataset_dir):
+            if os.path.exists(self.hparams.dataset_dir):
                 dataset = torch.load(self.hparams.dataset_dir)
+                dataset.transform = self.transforms
             else:
                 dataset = FocusDataset(self.hparams.data_dir, transform=self.transforms, subsample=self.hparams.subsample, subsample_size=self.hparams.subsample_size, select_patches_grid=self.hparams.select_patches_grid)
             len_dataset = len(dataset)

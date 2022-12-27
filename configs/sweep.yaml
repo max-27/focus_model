@@ -11,11 +11,11 @@
 # 5. Loading correct dataset?
 # 6. Check optimal number of workers for dataset
 # --> Let's go!
+description: Sweep on on subset of whole training data
 
 program: src/train.py
-project: Test123
-name: test123
-tags: [""]
+project: SweepFocusModelResize
+name: SweepFocusModelComplete
 method: bayes
 metric:
   name: val/loss
@@ -33,24 +33,28 @@ parameters:
   #  value: 0.5
   model.optimizer.lr:
     min: 0.00001
-    max: 0.001
+    max: 0.0001
   model.optimizer.weight_decay:
-    min: 0.01
+    min: 0.02
     max: 0.05
+  model.net.transfer:
+    value: False
   datamodule.batch_size:
-    values: [8, 16, 32, 64]
+    values: [64]
   datamodule.subsample: 
     value: True
   datamodule.subsample_size: 
     value: 100
   datamodule.num_workers:
-    value: 20
+    value: 8
   datamodule.select_patches_grid:
-    value: True
-  datamodule.dataset_dir:
-    value: /home/maf4031/focus_model/data/datasets/dataset_subsample100_grid_new.pt
-  model.net.transfer:
     value: False
+  datamodule.transformations.params.resize_img:
+    value: True
+  callbacks.early_stopping.patience:
+    value: 20
+  datamodule.dataset_dir:
+    value: /home/maf4031/focus_model/data/datasets/dataset_subsample100_complete.pt
   paths.data_dir:
     value: /n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset/
 
