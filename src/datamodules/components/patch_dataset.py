@@ -130,7 +130,7 @@ class PatchFocusDataset(Dataset):
         return dict(ChainMap(*list(futures)))
 
     def _get_patch_directories(self) -> Dict:
-        """Based on paths in array images get all patches for each sample."""
+        """Based on paths in array images get all patches for each sample and adjust labels of each patch."""
         patch_images = []
         patch_labels = []
         patches_dict = self._get_patches()
@@ -148,6 +148,6 @@ if __name__ == "__main__":
     import time 
     pl.seed_everything(42, workers=True)
     start = time.time()
-    dataset = PatchFocusDataset(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset", subsample_size=100)
+    dataset = PatchFocusDataset(data_dir="/Volumes/FOCUS_DATA/focus_dataset", subsample_size=100)
     print(time.time() - start)
-    torch.save(dataset, "/home/maf4031/focus_model/data/test1_patch_dataset.pt")
+    torch.save(dataset, "/Users/max/Desktop/Masterthesis/code/focus_model/data/test1_patch_dataset.pt")
