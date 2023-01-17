@@ -19,7 +19,7 @@ from collections import OrderedDict
 import torch
 import torch.nn as nn
 
-from ffc import FFC_BN_ACT, ConcatTupleLayer
+from src.models.components.ffc import FFC_BN_ACT, ConcatTupleLayer
 
 
 def get_model(model_name, in_channels=1, num_classes=9, ratio=0.5):
