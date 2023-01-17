@@ -13,21 +13,73 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License
+import pyrootutils
+
+root = pyrootutils.setup_root(
+    search_from=__file__,
+    indicator=[".git", "pyproject.toml"],
+    pythonpath=True,
+    dotenv=True,
+)
+
 
 from collections import OrderedDict
 
 import torch
 import torch.nn as nn
 
-from ynet import YNet_general
+from src.models.components.ynet import YNet_general
+from src.models.components.ffc import FFC_BN_ACT, ConcatTupleLayer
 
 
-class YNet_simplified(YNet_general):
+class YNet_simplified(nn.Module):
 
     def __init__(self, in_channels=3, out_channels=1, init_features=32, ratio_in=0.5, ffc=True, skip_ffc=False,
-                 cat_merge=True):
-        super().__init__(in_channels=in_channels, out_channels=out_channels, init_features=init_features, ratio_in=ratio_in, ffc=ffc, skip_ffc=skip_ffc,
-                 cat_merge=cat_merge)
+                 cat_merge=True, **kwargs):
+        super().__init__()
+        self.ffc = ffc
+        self.skip_ffc = skip_ffc
+        self.ratio_in = ratio_in
+        self.cat_merge = cat_merge
+
+        features = init_features
+        ############### Regular ##################################
+        self.encoder1 = YNet_general._block(in_channels, features, name="enc1")
+        self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.encoder2 = YNet_general._block(features, features * 2, name="enc2")  # was 1,2
+        self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.encoder3 = YNet_general._block(features * 2, features * 4, name="enc3")
+        self.pool3 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.encoder4 = YNet_general._block(features * 4, features * 4, name="enc4")  # was 8
+        self.pool4 = nn.MaxPool2d(kernel_size=2, stride=2)
+
+        if ffc:
+            ################ FFC #######################################
+            self.encoder1_f = FFC_BN_ACT(in_channels, features, kernel_size=1, ratio_gin=0, ratio_gout=ratio_in)
+            self.pool1_f = nn.MaxPool2d(kernel_size=2, stride=2)
+            self.encoder2_f = FFC_BN_ACT(features, features * 2, kernel_size=1, ratio_gin=ratio_in,
+                                         ratio_gout=ratio_in)  # was 1,2
+            self.pool2_f = nn.MaxPool2d(kernel_size=2, stride=2)
+            self.encoder3_f = FFC_BN_ACT(features * 2, features * 4, kernel_size=1, ratio_gin=ratio_in,
+                                         ratio_gout=ratio_in)
+            self.pool3_f = nn.MaxPool2d(kernel_size=2, stride=2)
+            self.encoder4_f = FFC_BN_ACT(features * 4, features * 4, kernel_size=1, ratio_gin=ratio_in,
+                                         ratio_gout=ratio_in)  # was 8
+            self.pool4_f = nn.MaxPool2d(kernel_size=2, stride=2)
+
+        else:
+            ############### Regular ##################################
+            self.encoder1_f = YNet_general._block(in_channels, features, name="enc1_2")
+            self.pool1_f = nn.MaxPool2d(kernel_size=2, stride=2)
+            self.encoder2_f = YNet_general._block(features, features * 2, name="enc2_2")  # was 1,2
+            self.pool2_f = nn.MaxPool2d(kernel_size=2, stride=2)
+            self.encoder3_f = YNet_general._block(features * 2, features * 4, name="enc3_2")  #
+            self.pool3_f = nn.MaxPool2d(kernel_size=2, stride=2)
+            self.encoder4_f = YNet_general._block(features * 4, features * 4, name="enc4_2")  # was 8
+            self.pool4_f = nn.MaxPool2d(kernel_size=2, stride=2)
+
+        self.bottleneck = YNet_general._block(features * 8, features * 16, name="bottleneck")  # 8, 16
+        self.catLayer = ConcatTupleLayer()
 
         self.regressor = nn.Sequential(
             nn.AdaptiveAvgPool2d((1, 1)),
@@ -146,6 +198,7 @@ class YNet_simplified(YNet_general):
                 ]
             )
         )
+
 
 if __name__ == "__main__":
     net = YNet_simplified()
