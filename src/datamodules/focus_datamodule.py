@@ -25,9 +25,10 @@ class Transformation:
     ):
         transformation_list = [transforms.ToTensor()]
         if params.resize_img:
-            h, w = [720, 1280]
-            w_scaled = int(w * 0.3)
-            h_scaled = int(h * 0.3)
+            #h, w = [720, 1280]
+            #w_scaled = int(w * 0.3)
+            #h_scaled = int(h * 0.3)
+            w_scaled, h_scaled = params.scaled_img_size
             transformation_list.append(transforms.Resize((h_scaled, w_scaled), interpolation=InterpolationMode.BILINEAR))
         if params.horizontal_flip:
             transformation_list.append(transforms.RandomHorizontalFlip(p=0.5))
