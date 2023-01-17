@@ -4,8 +4,8 @@
 # python train.py experiment=example
 
 defaults:
-  - override /datamodule: mobilenetv3.yaml
-  - override /model: mobilenetv3.yaml
+  - override /datamodule: ynet.yaml
+  - override /model: ynet_simplified.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
 
@@ -27,15 +27,14 @@ model:
   optimizer:
     lr: .001
     weight_decay: 0.0
-  net:
-    transfer: False
+  # net:
+  #   transfer: False
 
 datamodule:
   batch_size: 8
   subsample: True
-  # how many images from the left and right of the optimal focus point e.g. subsample_size = 50 --> 50 images left and 50 images right + optimal focused image
   subsample_size: 1
-  dataset_dir: "/home/maf4031/focus_model/data/datasets/dataset_subsample100_grid.pt"
+  dataset_dir: "/home/maf4031/focus_model/data/datasets/dataset_subsample10_complete.pt"
 
 
 logger:

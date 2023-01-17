@@ -9,13 +9,14 @@
 #    --> tags
 #    --> task name (DON'T change, only for specific reasons)
 # 5. Loading correct dataset?
+# 6. Loading correct model in train.yaml? ###### IMPORTANT ######
 # 6. Check optimal number of workers for dataset
 # --> Let's go!
 description: Sweep on on subset of whole training data
 
 program: src/train.py
-project: SweepFocusModelResize
-name: SweepFocusModelComplete
+project: SweepYNetResize # CHECK FOR CORRECT MODEL IN train.yaml
+name: Test
 method: bayes
 metric:
   name: val/loss
@@ -29,8 +30,6 @@ parameters:
     value: 1
   trainer.max_epochs:
     value: 100
-  #trainer.gradient_clip_val:
-  #  value: 0.5
   model.optimizer.lr:
     min: 0.00001
     max: 0.0001

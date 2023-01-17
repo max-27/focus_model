@@ -14,7 +14,7 @@ select_patches_random: False
 transformations:
   _target_: src.datamodules.focus_datamodule.Transformation
   params:
-    resize_img: False
+    resize_img: True
     scaled_img_size: [240, 240]
     horizontal_flip: False
     vertical_flip: False
