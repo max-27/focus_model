@@ -154,3 +154,6 @@ outputs/
 
 # wandb
 wandb/
+
+# Mac specific
+.DS_Store
