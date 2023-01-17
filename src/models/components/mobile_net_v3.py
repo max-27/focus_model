@@ -25,3 +25,10 @@ class MobileNetV3(nn.Module):
         x = self.feature_extractor(x)
         x = x.view(batch_size, -1)
         return self.regressor(x)
+    
+
+if __name__ == "__main__":
+    import torch
+    model = MobileNetV3()
+    img = torch.randn(1, 3, 720, 720)
+    out = model(img)
