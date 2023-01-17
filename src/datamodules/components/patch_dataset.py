@@ -55,7 +55,7 @@ class PatchFocusDataset(Dataset):
         return len(self.patch_labels)
 
     def __getitem__(self, idx) -> Tuple[torch.Tensor, torch.Tensor]:
-        img_path, x, y = self.patch_images[idx]
+        img_path, (x, y) = self.patch_images[idx]
         img = np.array(io.imread(img_path))
         patch = img[int(x-int(self.patch_size[0]/2)):int(x+int(self.patch_size[0]/2)), int(y-int(self.patch_size[1]/2)):int(y+int(self.patch_size[1]/2))]
         label = np.array([self.patch_labels[idx] * 3.4])  # mutliple by 3.4 to get distance in um
@@ -122,12 +122,19 @@ class PatchFocusDataset(Dataset):
     def _get_patches(self) -> Dict:
         sample_boxes = next(os.walk(self.data_dir))[1]
         samples = list(itertools.chain.from_iterable([glob.glob(os.path.join(self.data_dir, sample_box,'sample*')) for sample_box in sample_boxes]))
-        with ProcessPoolExecutor(max_workers=61) as executor:
-                futures = executor.map(
-                    self._get_patch_label,
-                    samples,
-                )
-        return dict(ChainMap(*list(futures)))
+        #with ProcessPoolExecutor(max_workers=61) as executor:
+        #        futures = executor.map(
+        #            self._get_patch_label,
+        #            samples,
+        #        )
+        #return dict(ChainMap(*list(futures)))
+        patch_list = []
+        for i, sample in enumerate(samples):
+            patch_list.append(self._get_patch_label(sample))
+            if i % 10000 == 0:
+                print(f'Processed {i} samples')
+        return dict(ChainMap(*patch_list))
+        #return dict(ChainMap(*[self._get_patch_label(sample) for sample in samples]))
 
     def _get_patch_directories(self) -> Dict:
         """Based on paths in array images get all patches for each sample and adjust labels of each patch."""
@@ -148,6 +155,6 @@ if __name__ == "__main__":
     import time 
     pl.seed_everything(42, workers=True)
     start = time.time()
-    dataset = PatchFocusDataset(data_dir="/Volumes/FOCUS_DATA/focus_dataset", subsample_size=100)
+    dataset = PatchFocusDataset(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset", subsample_size=100)
     print(time.time() - start)
-    torch.save(dataset, "/Users/max/Desktop/Masterthesis/code/focus_model/data/test1_patch_dataset.pt")
+    torch.save(dataset, "/home/maf4031/focus_model/data/dataset_patch_subsample100_grid_complete.pt")

@@ -15,15 +15,15 @@ transformations:
   _target_: src.datamodules.focus_datamodule.Transformation
   params:
     resize_img: False
-    horizontal_flip: True
-    vertical_flip: True
-    rotation: True
+    horizontal_flip: False
+    vertical_flip: False
+    rotation: False
     rotation_degrees: 90
-    perspective: True
+    perspective: False
     perspective_parameters: [0.1, 0.5]
-    autocontrast: True
-    color_jitter: True
+    autocontrast: False
+    color_jitter: False
     color_jitter_parameters: [0.5, 0.5, 0.5, 0.1]
-    random_erasing: True
+    random_erasing: False
     normalize: True 
 
