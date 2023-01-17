@@ -18,6 +18,7 @@ from pytorch_lightning.loggers import LightningLoggerBase
 
 from src import utils
 from src.datamodules.components.focus_dataset import FocusDataset # pylint: disable=unused-import
+from src.datamodules.components.patch_dataset import PatchFocusDataset # pylint: disable=unused-import
 
 log = utils.get_pylogger(__name__)
 
