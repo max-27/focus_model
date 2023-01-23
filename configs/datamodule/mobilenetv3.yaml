@@ -15,7 +15,7 @@ transformations:
   _target_: src.datamodules.focus_datamodule.Transformation
   params:
     resize_img: False
-    scaled_img_size: [216, 384]
+    scaled_img_size: [384, 216]
     horizontal_flip: False
     vertical_flip: False
     rotation: False
