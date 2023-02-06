@@ -30,5 +30,7 @@ class MobileNetV3(nn.Module):
 if __name__ == "__main__":
     import torch
     model = MobileNetV3()
-    img = torch.randn(1, 3, 720, 720)
-    out = model(img)
+    path_to_checkpoint = "/n/data2/hms/dbmi/kyu/lab/maf4031/trained_model/logs/wandb_sweep/runs/2022-12-31_18-16-15/checkpoints"
+    model.load_state_dict(torch.load(path_to_checkpoint + "/epoch_086.ckpt", map_location="cpu"))
+    model_script = torch.jit.script(model)
+    model_script.save("/home/maf4031/focus_model/outputs"+ "/model.pt")
