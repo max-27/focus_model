@@ -6,6 +6,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from typing import Any, Tuple, Union
 
 from kornia.geometry.transform import rotate
 
@@ -28,7 +29,7 @@ class LearnableSpatialTransformWrapper(nn.Module):
             self.angle = nn.Parameter(self.angle, requires_grad=True)
         self.pad_coef = pad_coef
 
-    def forward(self, x):
+    def forward(self, x: Any):
         if torch.is_tensor(x):
             return self.inverse_transform(self.impl(self.transform(x)), x)
         elif isinstance(x, tuple):
@@ -74,7 +75,7 @@ class FFCSE_block(nn.Module):
             channels // r, in_cg, kernel_size=1, bias=True)
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, x):
+    def forward(self, x: Tuple):
         x = x if type(x) is tuple else (x, 0)
         id_l, id_g = x
 
@@ -254,7 +255,7 @@ class FFC(nn.Module):
         module = nn.Identity if in_cg == 0 or out_cl == 0 or not self.gated else nn.Conv2d
         self.gate = module(in_channels, 2, 1)
 
-    def forward(self, x):
+    def forward(self, x: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> Tuple[int, int]:
         x_l, x_g = x if type(x) is tuple else (x, 0)
         out_xl, out_xg = 0, 0
 
@@ -330,7 +331,7 @@ class FFCResnetBlock(nn.Module):
             self.conv2 = LearnableSpatialTransformWrapper(self.conv2, **spatial_transform_kwargs)
         self.inline = inline
 
-    def forward(self, x):
+    def forward(self, x: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]):
         if self.inline:
             x_l, x_g = x[:, :-self.conv1.ffc.global_in_num], x[:, -self.conv1.ffc.global_in_num:]
         else:
@@ -349,7 +350,7 @@ class FFCResnetBlock(nn.Module):
 
 
 class ConcatTupleLayer(nn.Module):
-    def forward(self, x):
+    def forward(self, x: Any):
         assert isinstance(x, tuple)
         x_l, x_g = x
         assert torch.is_tensor(x_l) or torch.is_tensor(x_g)

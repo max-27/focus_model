@@ -24,6 +24,7 @@ root = pyrootutils.setup_root(
 
 
 from collections import OrderedDict
+from typing import Tuple
 
 import torch
 import torch.nn as nn
@@ -96,7 +97,7 @@ class YNet_simplified(nn.Module):
         ffted = ffted.view((batch, -1,) + ffted.size()[3:])
         return ffted
 
-    def forward(self, x):
+    def forward(self, x: Tuple[torch.Tensor, torch.Tensor]):
         batch = x.shape[0]
         # Spatial encoder
         enc1 = self.encoder1(x)
