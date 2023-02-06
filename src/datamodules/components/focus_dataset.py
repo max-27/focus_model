@@ -84,7 +84,8 @@ class FocusDataset(Dataset):
     
     def _find_files_by_sample(self, subsample_size: int = 20) -> None:
         for sample_box in next(os.walk(self.data_dir))[1]:
-            samples = glob.glob(os.path.join(self.data_dir, sample_box,'sample*'))
+            #samples = glob.glob(os.path.join(self.data_dir, sample_box,'sample*'))
+            samples = glob.glob(os.path.join(self.data_dir, sample_box))
             for sample in samples:
                 images = glob.glob(os.path.join(sample,'*distance*.jpg'))
                 labels = [int(re.findall(r"-?\d+", path)[-1]) for path in images]
@@ -179,8 +180,8 @@ if __name__ == "__main__":
     pl.seed_everything(42, workers=True)
     subsample_size = 100
     start_time = time.time()
-    dataset = FocusDataset(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset", subsample=True, subsample_size=subsample_size, select_patches_grid=False, patch_size=[360, 256])
+    dataset = FocusDataset(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/new_dataset/low_quality", subsample=True, subsample_size=subsample_size, select_patches_grid=False, patch_size=[360, 256])
     print(f"Time to load dataset: {time.time() - start_time}")
     #torch.save(dataset, f"/home/maf4031/focus_model/data/datasets/dataset_subsample{subsample_size}_grid1.pt")
-    torch.save(dataset, f"/home/maf4031/focus_model/data/datasets/dataset_subsample{subsample_size}_complete.pt")
+    torch.save(dataset, f"/home/maf4031/focus_model/data/datasets/dataset_subsample{subsample_size}_gbmlcc.pt")
     
