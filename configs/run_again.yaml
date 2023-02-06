@@ -1,0 +1,133 @@
+task_name: wandb_sweep
+tags:
+- dev
+train: true
+test: true
+ckpt_path: null
+seed: 42
+datamodule:
+  _target_: src.datamodules.focus_datamodule.FocusDataModule
+  data_dir: ${paths.data_dir}
+  dataset_dir: /home/maf4031/focus_model/data/datasets/dataset_subsample100_complete.pt
+  batch_size: 64
+  splits:
+  - 0.8
+  - 0.1
+  num_workers: 8
+  pin_memory: false
+  subsample: true
+  subsample_size: 100
+  select_patches_grid: false
+  select_patches_random: false
+  transformations:
+    _target_: src.datamodules.focus_datamodule.Transformation
+    params:
+      resize_img: true
+      scaled_img_size:
+      - 240
+      - 240
+      horizontal_flip: false
+      vertical_flip: false
+      rotation: false
+      rotation_degrees: 90
+      perspective: false
+      perspective_parameters:
+      - 0.1
+      - 0.5
+      autocontrast: false
+      color_jitter: false
+      color_jitter_parameters:
+      - 0.5
+      - 0.5
+      - 0.5
+      - 0.1
+      random_erasing: false
+      normalize: true
+model:
+  _target_: src.models.focus_module.FocusModule
+  optimizer:
+    _target_: torch.optim.Adam
+    _partial_: true
+    lr: 7.848443836465026e-05
+    weight_decay: 0.0036166069290818064
+  scheduler:
+    _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
+    _partial_: true
+    mode: min
+    factor: 0.1
+    patience: 10
+  net:
+    _target_: src.models.components.ynet_simplified.YNet_simplified
+    transfer: false
+    in_channels: 3
+    out_channels: 1
+    init_features: 32
+    ratio_in: 0.5
+    ffc: true
+    skip_ffc: false
+    cat_merge: true
+callbacks:
+  model_checkpoint:
+    _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    dirpath: ${paths.output_dir}/checkpoints
+    filename: epoch_{epoch:03d}
+    monitor: val/focus_error
+    verbose: false
+    save_last: true
+    save_top_k: 1
+    mode: min
+    auto_insert_metric_name: false
+    save_weights_only: false
+    every_n_train_steps: null
+    train_time_interval: null
+    every_n_epochs: null
+    save_on_train_epoch_end: null
+  early_stopping:
+    _target_: pytorch_lightning.callbacks.EarlyStopping
+    monitor: val/loss
+    min_delta: 0.0
+    patience: 20
+    verbose: false
+    mode: min
+    strict: true
+    check_finite: true
+    stopping_threshold: null
+    divergence_threshold: null
+    check_on_train_epoch_end: null
+  model_summary:
+    _target_: pytorch_lightning.callbacks.RichModelSummary
+    max_depth: -1
+  rich_progress_bar:
+    _target_: pytorch_lightning.callbacks.RichProgressBar
+logger:
+  wandb:
+    _target_: pytorch_lightning.loggers.wandb.WandbLogger
+    save_dir: ${paths.output_dir}
+    offline: false
+    id: null
+    anonymous: null
+    project: null
+    log_model: false
+    prefix: ''
+    group: ''
+    tags: []
+    job_type: ''
+trainer:
+  _target_: pytorch_lightning.Trainer
+  default_root_dir: ${paths.output_dir}
+  min_epochs: 1
+  max_epochs: 600
+  accelerator: gpu
+  devices: 1
+  check_val_every_n_epoch: 1
+  deterministic: false
+paths:
+  root_dir: ${oc.env:PROJECT_ROOT}
+  data_dir: /n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset/
+  log_dir: ${paths.root_dir}/logs/
+  output_dir: ${hydra:runtime.output_dir}
+  work_dir: ${hydra:runtime.cwd}
+extras:
+  ignore_warnings: false
+  enforce_tags: true
+  print_config: true
