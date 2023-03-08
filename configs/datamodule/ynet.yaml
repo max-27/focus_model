@@ -27,4 +27,3 @@ transformations:
     color_jitter_parameters: [0.5, 0.5, 0.5, 0.1]
     random_erasing: False
     normalize: True 
-

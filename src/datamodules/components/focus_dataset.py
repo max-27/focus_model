@@ -9,6 +9,7 @@ root = pyrootutils.setup_root(
 
 
 import torch
+from tqdm import tqdm
 from torch.utils.data import Dataset
 import pytorch_lightning as pl
 from skimage import io
@@ -85,18 +86,19 @@ class FocusDataset(Dataset):
     def _find_files_by_sample(self, subsample_size: int = 20) -> None:
         for sample_box in next(os.walk(self.data_dir))[1]:
             #samples = glob.glob(os.path.join(self.data_dir, sample_box,'sample*'))
-            samples = glob.glob(os.path.join(self.data_dir, sample_box))
+            samples = glob.glob(os.path.join(self.data_dir, sample_box+'/*'))
+            #samples = glob.glob(os.path.join(self.data_dir, sample_box))
             for sample in samples:
                 images = glob.glob(os.path.join(sample,'*distance*.jpg'))
                 labels = [int(re.findall(r"-?\d+", path)[-1]) for path in images]
-                sampled_images, samples_labels = self._sample_images(images, labels, subsample_size)
+                sampled_images, samples_labels = self._sample_images(images, labels, subsample_size, sample)
                 self.array_images.extend(sampled_images)
                 self.array_labels.extend(samples_labels)
     
-    def _sample_images(self, images: List, labels: List, subsample_size: int = 50) -> Tuple[List, List]:
+    def _sample_images(self, images: List, labels: List, subsample_size: int = 50, sample= "") -> Tuple[List, List]:
         """Sample images with positive and negative distance values."""
         images_pos_distance = [path for path in images if int(re.findall(r"-?\d+", path)[-1]) > 0]
-        images_neg_distance = [path for path in images if int(re.findall(r"-?\d+", path)[-1]) < 0]
+        images_neg_distance = [path for path in images if int(re.findall(r"-?\d+", path)[-1]) < 0 and int(re.findall(r"-?\d+", path)[-1]) > -550]
         optimal_img = [path for path in images if int(re.findall(r"-?\d+", path)[-1]) == 0][0]
 
         num_pos_indices = subsample_size if subsample_size < len(images_pos_distance) else len(images_pos_distance)
@@ -108,16 +110,18 @@ class FocusDataset(Dataset):
 
         pos_labels = [int(re.findall(r"-?\d+", path)[-1]) for path in pos_images]
         neg_labels = [int(re.findall(r"-?\d+", path)[-1]) for path in neg_images]
+        if len([*pos_images, *neg_images, optimal_img]) < 201:
+            print(sample)
         return [*pos_images, *neg_images, optimal_img], [*pos_labels, *neg_labels, 0]
 
     def _select_patches(self, select_func: Callable) -> None:
         patch_array, label_array = [], []
-        for idx, img in enumerate(self.array_images):
+        for idx, img in enumerate(tqdm(self.array_images)):
             patches, labels = self._select_patches_from_grid(img)
             patch_array.extend(patches)
             label_array.extend(labels)
-            if idx%10000 == 0:
-                print(f"Processed {idx+1} images")
+            # if idx%10000 == 0:
+            #    print(f"Processed {idx+1} images")
         self.array_images = patch_array
         self.array_labels = label_array
 
@@ -154,24 +158,8 @@ class FocusDataset(Dataset):
             if sample_ratio >= threshold:
                 patches.append((img_path, int(x), int(y)))
                 patch_labels.append(int(re.findall(r"-?\d+", img_path)[-1]))
-        if len(patches) < 5:
-            curr_max_sample_ratio = 0
-            curr_max_patch = None
-            x_coord = int(h/2)
-            y_coord = np.linspace(int(patch_size[1]), w - patch_size[1], y_steps)[:-1]
-            alt_patch_coords = [(x,y) for y in y_coord]
-            for x, y in alt_patch_coords:
-                patch = image[int(x-int(patch_size[0]/2)):int(x+int(patch_size[0]/2)), int(y-int(patch_size[1]/2)):int(y+int(patch_size[1]/2))]
-                sample_ratio = self.color_filter._get_sample_ratio(patch)
-                if sample_ratio > curr_max_sample_ratio:
-                    curr_max_sample_ratio = sample_ratio
-                    curr_max_patch = (x, y)
-                if sample_ratio >= threshold:
-                    patches.append((img_path, int(x), int(y)))
-                    patch_labels.append(int(re.findall(r"-?\d+", img_path)[-1]))
-        if len(patches) < 5:
-            patches.append((img_path, *curr_max_patch))
-            patch_labels.append(int(re.findall(r"-?\d+", img_path)[-1]))
+        if len(patches) == 0:
+            print(img_path)
         return patches, patch_labels
 
 
@@ -180,8 +168,10 @@ if __name__ == "__main__":
     pl.seed_everything(42, workers=True)
     subsample_size = 100
     start_time = time.time()
-    dataset = FocusDataset(data_dir="/n/data2/hms/dbmi/kyu/lab/maf4031/new_dataset/low_quality", subsample=True, subsample_size=subsample_size, select_patches_grid=False, patch_size=[360, 256])
+    #data_dir = "/n/data2/hms/dbmi/kyu/lab/maf4031/new_dataset/low_quality"
+    data_dir = "/n/data2/hms/dbmi/kyu/lab/maf4031/finetune_focusdataset"
+    dataset = FocusDataset(data_dir=data_dir, subsample=True, subsample_size=subsample_size, select_patches_grid=True, patch_size=[360, 256])
     print(f"Time to load dataset: {time.time() - start_time}")
-    #torch.save(dataset, f"/home/maf4031/focus_model/data/datasets/dataset_subsample{subsample_size}_grid1.pt")
-    torch.save(dataset, f"/home/maf4031/focus_model/data/datasets/dataset_subsample{subsample_size}_gbmlcc.pt")
+    torch.save(dataset, f"/home/maf4031/focus_model/data/datasets/dataset_subsample{subsample_size}_grid.pt")
+    #torch.save(dataset, f"/home/maf4031/focus_model/data/datasets/test_dataset_subsample{subsample_size}_gbmlcc.pt")
     

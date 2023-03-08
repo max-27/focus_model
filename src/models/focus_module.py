@@ -85,7 +85,6 @@ class FocusModule(LightningModule):
         pass
 
     def configure_optimizers(self):
-        #optimizer = self.hparams.optimizer(params=self.parameters())
         optimizer = self.hparams.optimizer(filter(lambda p: p.requires_grad, self.parameters()))
         if self.hparams.scheduler is not None:
             scheduler = self.hparams.scheduler(optimizer=optimizer)

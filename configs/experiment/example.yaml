@@ -4,21 +4,21 @@
 # python train.py experiment=example
 
 defaults:
-  - override /datamodule: ynet.yaml
-  - override /model: ynet_simplified.yaml
+  - override /datamodule: ynet_jiang.yaml
+  - override /model: ynet_spectral.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
 
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
 task_name: "experiment"
-tags: ["real_focus", "mobilenetv3"]
+tags: ["ynet_patch_test"]
 
-seed: 12345
+seed: 42
 
 trainer:
   min_epochs: 1
-  max_epochs: 15
+  max_epochs: 1
   accelerator: cpu
   devices: 1
   gradient_clip_val: 0
@@ -27,14 +27,12 @@ model:
   optimizer:
     lr: .001
     weight_decay: 0.0
-  # net:
-  #   transfer: False
 
 datamodule:
   batch_size: 8
   subsample: True
   subsample_size: 1
-  dataset_dir: "/home/maf4031/focus_model/data/datasets/dataset_subsample10_complete.pt"
+  transformations.resize_img: False
 
 
 logger:

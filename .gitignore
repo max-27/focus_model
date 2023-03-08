@@ -157,3 +157,5 @@ wandb/
 
 # Mac specific
 .DS_Store
+
+*.npy

@@ -15,8 +15,10 @@
 description: Sweep on on subset of whole training data
 
 program: src/train.py
-project: SweepYNetResize # CHECK FOR CORRECT MODEL IN train.yaml
-name: Test
+###### IMPORTANT ######
+project: Test # CHECK FOR CORRECT MODEL AND DATAMODULE IN train.yaml
+###### IMPORTANT ######
+name: Batch64Sigmoid
 method: bayes
 metric:
   name: val/loss
@@ -24,18 +26,20 @@ metric:
 parameters:
   task_name: 
     value: wandb_sweep
+  ckpt_path: 
+    value: /n/data2/hms/dbmi/kyu/lab/maf4031/trained_model/logs/wandb_sweep/runs/2022-12-31_18-16-15/checkpoints/epoch_086.ckpt
   trainer.accelerator:
     value: gpu
   trainer.devices:
     value: 1
   trainer.max_epochs:
-    value: 100
+    value: 50
   model.optimizer.lr:
-    min: 0.00001
+    min: 0.000001
     max: 0.0001
   model.optimizer.weight_decay:
-    min: 0.02
-    max: 0.05
+    min: 0.000001
+    max: 0.001
   model.net.transfer:
     value: False
   datamodule.batch_size:
@@ -51,7 +55,7 @@ parameters:
   datamodule.transformations.params.resize_img:
     value: True
   callbacks.early_stopping.patience:
-    value: 20
+    value: 5
   datamodule.dataset_dir:
     value: /home/maf4031/focus_model/data/datasets/dataset_subsample100_complete.pt
   paths.data_dir:

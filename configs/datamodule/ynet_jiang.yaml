@@ -1,0 +1,26 @@
+_target_: src.datamodules.focus_datamodule_patch.FocusDataModulePatch 
+
+train_dataset_dir: /home/maf4031/focus_model/data/jiang_datasets/dataset_patch_train.pt
+test_dataset_dir: /home/maf4031/focus_model/data/jiang_datasets/dataset_patch_test_same.pt
+batch_size: 1
+splits: [0.8]
+num_workers: 0
+pin_memory: False
+
+
+transformations:
+  _target_: src.datamodules.focus_datamodule_patch.Transformation
+  params:
+    resize_img: False
+    scaled_img_size: [224, 224]
+    horizontal_flip: False
+    vertical_flip: False
+    rotation: False
+    rotation_degrees: 90
+    perspective: False
+    perspective_parameters: [0.1, 0.5]
+    autocontrast: False
+    color_jitter: False
+    color_jitter_parameters: [0.5, 0.5, 0.5, 0.1]
+    random_erasing: False
+    normalize: True 

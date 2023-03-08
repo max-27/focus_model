@@ -1,0 +1,54 @@
+# TODOs before submitting a sweep
+# 1. Is all code committed?
+#   --> create new sweep branch to run from!
+# 2. Was the code tested? 
+# 3. Check if all default values make sense/are desired
+# 4. Is the run correctly specified?
+#    --> project 
+#    --> name
+#    --> tags
+#    --> task name (DON'T change, only for specific reasons)
+# 5. Loading correct dataset?
+# 6. Loading correct model in train.yaml? ###### IMPORTANT ######
+# 6. Check optimal number of workers for dataset
+# --> Let's go!
+description: Only learn spatial features
+
+program: src/train.py
+###### IMPORTANT ######
+project: SweepYNetJiang # CHECK FOR CORRECT MODEL AND DATAMODULE IN train.yaml
+###### IMPORTANT ######
+name: SpectralRelu
+method: bayes
+metric:
+  name: val/loss
+  goal: minimize
+parameters:
+  task_name: 
+    value: wandb_sweep
+  trainer.accelerator:
+    value: gpu
+  trainer.devices:
+    value: 4
+  trainer.max_epochs:
+    value: 150
+  model.net.ratio_in:
+    value: .5
+  model.optimizer.lr:
+    min: 0.00001
+    max: 0.001
+  model.optimizer.weight_decay:
+    min: 0.00001
+    max: 0.001
+  datamodule.batch_size:
+    values: [32]
+  datamodule.num_workers:
+    value: 8
+  callbacks.early_stopping.patience:
+    value: 20
+
+command:
+  - ${env}
+  - python
+  - ${program}
+  - ${args_no_hyphens}
