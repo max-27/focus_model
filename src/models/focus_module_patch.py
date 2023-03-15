@@ -1,4 +1,6 @@
 from typing import Any, List
+import csv
+import pickle
 
 import torch
 from pytorch_lightning import LightningModule
@@ -32,6 +34,7 @@ class FocusModule(LightningModule):
         self.test_loss = MeanMetric()
 
         self.val_focus_error_best = MinMetric()
+        self.test_focus_err_best = MinMetric()
 
     def forward(self, x: torch.Tensor):
         return self.net(x)
@@ -75,26 +78,37 @@ class FocusModule(LightningModule):
         self.log("val/focus_error_best", self.val_focus_error_best.compute(), prog_bar=True)
 
     def test_step(self, batch: Any, batch_idx: int):
-        x, y, sample_ids = batch
+        x, y, ids = batch
+        patch_ids = [ids[0][i] + "_" + ids[1][i] for i in range(len(x))]
+            
         loss, preds, targets = self.step((x, y))
 
-        for idx, sample_id in enumerate(sample_ids):
-            if sample_id not in self.test_prediction_dict:
-                self.test_prediction_dict[sample_id] = torch.Tensor()
-                self.test_target_dict[sample_id] = targets[idx].to('cpu')
-            self.test_prediction_dict[sample_id] = torch.cat((self.test_prediction_dict[sample_id], preds[idx].to('cpu')))
+        self.test_focus_error(preds, targets)
+
+        for idx, id in enumerate(patch_ids):
+            if id not in self.test_prediction_dict:
+                self.test_prediction_dict[id] = torch.Tensor()
+                self.test_target_dict[id] = targets[idx].to('cpu')
+            self.test_prediction_dict[id] = torch.cat((self.test_prediction_dict[id], preds[idx].to('cpu')))
         # update and log metrics
         self.test_loss(loss)
         self.log("test/loss", self.test_loss, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("test/focus_error", self.test_focus_error, on_step=False, on_epoch=True, prog_bar=True)
         return {"loss": loss, "preds": preds, "targets": targets}
 
     def test_epoch_end(self, outputs: List[Any]):
+        with open('/home/maf4031/focus_model/output/test_prediction.pkl', 'wb') as f:
+            pickle.dump(self.test_prediction_dict, f)
+        
         errors = []
         for sample_id in self.test_prediction_dict:
             self.test_prediction_dict[sample_id] = torch.mean(self.test_prediction_dict[sample_id])
             errors.append(abs(self.test_target_dict[sample_id]-self.test_prediction_dict[sample_id]))
         final_error = torch.mean(torch.Tensor(errors))
+        final_std = torch.std(torch.Tensor(errors))
         self.log("test/focus_error", final_error, prog_bar=True)
+        self.log("test/focus_std", final_std, prog_bar=True)
+        self.log("test/focus_error_best", self.test_focus_err_best.compute(), prog_bar=True)
 
     def configure_optimizers(self):
         #optimizer = self.hparams.optimizer(params=self.parameters())

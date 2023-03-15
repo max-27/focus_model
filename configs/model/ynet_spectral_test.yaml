@@ -1,4 +1,3 @@
-#_target_: src.models.focus_module.FocusModule
 _target_: src.models.focus_module_patch.FocusModule
 
 optimizer:
@@ -15,7 +14,7 @@ scheduler:
   patience: 10 
 
 net:
-  _target_: src.models.components.ynet_simplified.YNet_simplified
+  _target_: src.models.components.ynet_spectral.YNet_simplified
   transfer: false
   in_channels: 3
   out_channels: 1

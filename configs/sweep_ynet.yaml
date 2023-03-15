@@ -18,7 +18,7 @@ program: src/train.py
 ###### IMPORTANT ######
 project: SweepYNetJiang # CHECK FOR CORRECT MODEL AND DATAMODULE IN train.yaml
 ###### IMPORTANT ######
-name: SpectralRelu
+name: SpectralAugmentation
 method: bayes
 metric:
   name: val/loss
@@ -35,10 +35,10 @@ parameters:
   model.net.ratio_in:
     value: .5
   model.optimizer.lr:
-    min: 0.00001
+    min: 0.0007
     max: 0.001
   model.optimizer.weight_decay:
-    min: 0.00001
+    min: 0.0002
     max: 0.001
   datamodule.batch_size:
     values: [32]

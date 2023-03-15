@@ -159,3 +159,4 @@ wandb/
 .DS_Store
 
 *.npy
+*.csv

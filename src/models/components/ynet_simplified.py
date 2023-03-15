@@ -85,7 +85,7 @@ class YNet_simplified(nn.Module):
         self.regressor = nn.Sequential(
             nn.AdaptiveAvgPool2d((1, 1)),
             nn.Flatten(),
-            nn.Sigmoid(),
+            nn.ReLU(),
             nn.Linear(512, 1),
         )
 

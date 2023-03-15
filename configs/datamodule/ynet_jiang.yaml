@@ -1,11 +1,11 @@
 _target_: src.datamodules.focus_datamodule_patch.FocusDataModulePatch 
 
 train_dataset_dir: /home/maf4031/focus_model/data/jiang_datasets/dataset_patch_train.pt
-test_dataset_dir: /home/maf4031/focus_model/data/jiang_datasets/dataset_patch_test_same.pt
-batch_size: 1
+test_dataset_dir: /home/maf4031/focus_model/data/test/same_test_dataset.pt
+batch_size: 32
 splits: [0.8]
 num_workers: 0
-pin_memory: False
+pin_memory: True
 
 
 transformations:

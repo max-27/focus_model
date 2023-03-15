@@ -5,7 +5,7 @@
 defaults:
   - _self_
   - datamodule: ynet_jiang.yaml
-  - model: ynet_spectral_relu.yaml
+  - model: ynet_spectral.yaml
   - callbacks: default.yaml
   - logger: wandb 
   - trainer: default.yaml
