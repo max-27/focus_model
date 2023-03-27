@@ -12,13 +12,13 @@
 # 6. Loading correct model in train.yaml? ###### IMPORTANT ######
 # 6. Check optimal number of workers for dataset
 # --> Let's go!
-description: Only learn spatial features
+description: Only learn spectral features
 
 program: src/train.py
 ###### IMPORTANT ######
-project: SweepYNetJiang # CHECK FOR CORRECT MODEL AND DATAMODULE IN train.yaml
+project: SweepYNetSpectral # CHECK FOR CORRECT MODEL AND DATAMODULE IN train.yaml
 ###### IMPORTANT ######
-name: SpectralAugmentation
+name: SpectralRELU
 method: bayes
 metric:
   name: val/loss
@@ -29,23 +29,25 @@ parameters:
   trainer.accelerator:
     value: gpu
   trainer.devices:
-    value: 4
+    value: 2
   trainer.max_epochs:
     value: 150
+  model.net.activation_function:
+    value: relu
   model.net.ratio_in:
     value: .5
   model.optimizer.lr:
-    min: 0.0007
+    min: 0.00001
     max: 0.001
   model.optimizer.weight_decay:
-    min: 0.0002
-    max: 0.001
+    min: 0.00001
+    max: 0.1
   datamodule.batch_size:
     values: [32]
   datamodule.num_workers:
-    value: 8
+    value: 16
   callbacks.early_stopping.patience:
-    value: 20
+    value: 10
 
 command:
   - ${env}

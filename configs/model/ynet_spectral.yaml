@@ -14,7 +14,7 @@ scheduler:
   patience: 10 
 
 net:
-  _target_: src.models.components.ynet_spectral.YNet_simplified
+  _target_: src.models.components.ynet_spectral.YNet_spectral
   transfer: false
   in_channels: 3
   out_channels: 1
@@ -23,3 +23,4 @@ net:
   ffc: true
   skip_ffc: false
   cat_merge: true
+  activation_function: relu

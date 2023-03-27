@@ -12,7 +12,7 @@ class FocusModule(LightningModule):
     def __init__(
         self,
         net: torch.nn.Module,
-        optimizer: torch.optim.Optimizer,
+        optimizer: torch.optim.Optimizer = None,
         scheduler: torch.optim.lr_scheduler = None,
     ):
         super().__init__()
@@ -52,14 +52,14 @@ class FocusModule(LightningModule):
     def training_step(self, batch: List[torch.Tensor], batch_idx: int) -> torch.Tensor:
         x, y, _ = batch
         loss, preds, targets = self.step((x, y))
-        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
         self.train_loss(loss)
         self.train_focus_error(preds, targets)
         return loss
 
     def training_epoch_end(self, outs: List[Any]) -> None:
-        self.log("train_loss_epoch", self.train_loss.compute(), prog_bar=True, logger=True)
-        self.log("train_focus_error_epoch", self.train_focus_error.compute(), prog_bar=True, logger=True)
+        self.log("train_loss_epoch", self.train_loss.compute(), prog_bar=True, logger=True, sync_dist=True)
+        self.log("train_focus_error_epoch", self.train_focus_error.compute(), prog_bar=True, logger=True, sync_dist=True)
 
     def validation_step(self, batch: Any, batch_idx: int):
         x, y, _ = batch
@@ -68,14 +68,14 @@ class FocusModule(LightningModule):
         # update and log metrics
         self.val_loss(loss)
         self.val_focus_error(preds, targets)
-        self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True)
-        self.log("val/focus_error", self.val_focus_error, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log("val/focus_error", self.val_focus_error, on_step=False, on_epoch=True, prog_bar=True, sync_dist=True)
         return {"loss": loss, "preds": preds, "targets": targets}
 
     def validation_epoch_end(self, outputs: List[Any]):
         focus_error = self.val_focus_error.compute()
         self.val_focus_error_best(focus_error)
-        self.log("val/focus_error_best", self.val_focus_error_best.compute(), prog_bar=True)
+        self.log("val/focus_error_best", self.val_focus_error_best.compute(), prog_bar=True, sync_dist=True)
 
     def test_step(self, batch: Any, batch_idx: int):
         x, y, ids = batch

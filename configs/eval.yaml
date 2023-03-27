@@ -3,7 +3,7 @@
 defaults:
   - _self_
   - datamodule: ynet_jiang.yaml
-  - model: ynet_mixed.yaml
+  - model: ynet_spectral.yaml
   - logger: null
   - trainer: default.yaml
   - paths: default.yaml
@@ -17,4 +17,4 @@ tags: ["dev"]
 # passing checkpoint path is necessary for evaluation
 #ckpt_path: /home/maf4031/focus_model/logs/wandb_sweep/runs/2023-03-06_10-35-54/checkpoints/epoch_147.ckpt
 #ckpt_path: /home/maf4031/focus_model/logs/wandb_sweep/runs/2023-03-08_15-23-37/checkpoints/epoch_148.ckpt
-ckpt_path: /home/maf4031/focus_model/logs/wandb_sweep/runs/2023-03-08_14-57-23/checkpoints/epoch_137.ckpt
+ckpt_path: /home/maf4031/focus_model/logs/wandb_sweep/runs/2023-03-17_21-38-15/checkpoints/epoch_091.ckpt

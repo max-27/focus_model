@@ -6,26 +6,21 @@ test: true
 ckpt_path: null
 seed: 42
 datamodule:
-  _target_: src.datamodules.focus_datamodule.FocusDataModule
-  data_dir: ${paths.data_dir}
-  dataset_dir: /home/maf4031/focus_model/data/datasets/dataset_subsample100_complete.pt
-  batch_size: 64
+  _target_: src.datamodules.focus_datamodule_patch.FocusDataModulePatch
+  train_dataset_dir: /home/maf4031/focus_model/data/jiang_datasets/dataset_patch_train.pt
+  test_dataset_dir: /home/maf4031/focus_model/data/test/same_test_dataset.pt
+  batch_size: 32
   splits:
   - 0.8
-  - 0.1
-  num_workers: 8
-  pin_memory: false
-  subsample: true
-  subsample_size: 100
-  select_patches_grid: false
-  select_patches_random: false
+  num_workers: 16
+  pin_memory: true
   transformations:
-    _target_: src.datamodules.focus_datamodule.Transformation
+    _target_: src.datamodules.focus_datamodule_patch.Transformation
     params:
-      resize_img: true
+      resize_img: false
       scaled_img_size:
-      - 240
-      - 240
+      - 224
+      - 224
       horizontal_flip: false
       vertical_flip: false
       rotation: false
@@ -44,12 +39,12 @@ datamodule:
       random_erasing: false
       normalize: true
 model:
-  _target_: src.models.focus_module.FocusModule
+  _target_: src.models.focus_module_patch.FocusModule
   optimizer:
     _target_: torch.optim.Adam
     _partial_: true
-    lr: 7.848443836465026e-05
-    weight_decay: 0.0036166069290818064
+    lr: 0.0006212736245618574
+    weight_decay: 0.013895636518107985
   scheduler:
     _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
     _partial_: true
@@ -57,7 +52,7 @@ model:
     factor: 0.1
     patience: 10
   net:
-    _target_: src.models.components.ynet_simplified.YNet_simplified
+    _target_: src.models.components.ynet_spectral.YNet_spectral
     transfer: false
     in_channels: 3
     out_channels: 1
@@ -66,6 +61,7 @@ model:
     ffc: true
     skip_ffc: false
     cat_merge: true
+    activation_function: relu
 callbacks:
   model_checkpoint:
     _target_: pytorch_lightning.callbacks.ModelCheckpoint
@@ -86,7 +82,7 @@ callbacks:
     _target_: pytorch_lightning.callbacks.EarlyStopping
     monitor: val/loss
     min_delta: 0.0
-    patience: 20
+    patience: 10
     verbose: false
     mode: min
     strict: true
@@ -116,14 +112,14 @@ trainer:
   _target_: pytorch_lightning.Trainer
   default_root_dir: ${paths.output_dir}
   min_epochs: 1
-  max_epochs: 600
+  max_epochs: 150
   accelerator: gpu
   devices: 1
   check_val_every_n_epoch: 1
   deterministic: false
 paths:
   root_dir: ${oc.env:PROJECT_ROOT}
-  data_dir: /n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset/
+  data_dir: /n/data2/hms/dbmi/kyu/lab/maf4031/focus_dataset
   log_dir: ${paths.root_dir}/logs/
   output_dir: ${hydra:runtime.output_dir}
   work_dir: ${hydra:runtime.cwd}

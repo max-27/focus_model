@@ -30,6 +30,9 @@ class ColorFilter:
     def _convert_BGR_to_HSV(self, img: np.array) -> np.array:
         return cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
+    def _convert_RGB_to_HSV(self, img: np.array) -> np.array:
+        return cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+
     def _get_mask(self, img_hsv: np.array) -> np.array:
         return cv2.inRange(img_hsv, LOWER_HSV_RANGE, UPPER_HSV_RANGE)
 
@@ -69,7 +72,7 @@ class ColorFilter:
         float
             Ratio of the image containing sample
         """
-        hsv_img = self._convert_BGR_to_HSV(img_arr)
+        hsv_img = self._convert_RGB_to_HSV(img_arr)
         mask = self._get_mask(hsv_img)
         sample_pixel_count = (mask/255).astype(int).sum()
         return (sample_pixel_count/mask.size)*100

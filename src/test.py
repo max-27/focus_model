@@ -121,9 +121,9 @@ class TestDatamodule(LightningDataModule):
 
 
 if __name__ == "__main__":
-    from src.models.components.ynet_spectral import YNet_simplified as YNet_simplified_spectral
-    from src.models.components.ynet_spatial import YNet_simplified as YNet_simplified_spatial
-    from src.models.components.ynet_simplified import YNet_simplified as YNet_simplified_mixed
+    from src.models.components.ynet_spectral import YNet_spectral
+    from src.models.components.ynet_spatial import YNet_spatial
+    from src.models.components.ynet_mixed import YNet_mixed
 
     device = "cpu"
     load_existing_dataset = False
@@ -138,7 +138,7 @@ if __name__ == "__main__":
         dataset = torch.load(f"/home/maf4031/focus_model/data/test/{protocol}_test_dataset.pt")
     print(len(dataset))
     dataset.transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0), (1))])
-    model = YNet_simplified_spectral()
+    model = YNet_spectral()
     state_dict = torch.load(ckpt_path, map_location=device)['state_dict']
     state_dict = {k.replace("net.", ""): v for k, v in state_dict.items()}
     model.load_state_dict(state_dict)

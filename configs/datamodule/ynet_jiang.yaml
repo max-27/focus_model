@@ -4,7 +4,7 @@ train_dataset_dir: /home/maf4031/focus_model/data/jiang_datasets/dataset_patch_t
 test_dataset_dir: /home/maf4031/focus_model/data/test/same_test_dataset.pt
 batch_size: 32
 splits: [0.8]
-num_workers: 0
+num_workers: 16
 pin_memory: True
 
 
