@@ -96,7 +96,7 @@ class FocusDataModulePatch(LightningDataModule):
             )
 
             self.data_test = torch.load(self.hparams.test_dataset_dir)
-            self.data_test.transform = self.transforms
+            self.data_test.transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0), (1))])
 
     def train_dataloader(self):
         return DataLoader(
