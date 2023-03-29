@@ -43,6 +43,6 @@ for img_path in tqdm(array_images):
     image = io.imread(img_path)
     for x, y in patch_coords:
         patch = image[int(x-int(patch_size[0]/2)):int(x+int(patch_size[0]/2)), int(y-int(patch_size[1]/2)):int(y+int(patch_size[1]/2))]
-        cv2.imwrite(os.path.join(save_dir, folder_name, f"{int(x)}_{int(y)}_{img_name}.jpg"), patch)
+        cv2.imwrite(os.path.join(save_dir, folder_name, f"{int(x)}_{int(y)}_{img_name}"), patch)
         #patches.append((img_path, int(x), int(y)))
         #patch_labels.append(int(re.findall(r"-?\d+", img_path.split("/")[-1])[-1]))
