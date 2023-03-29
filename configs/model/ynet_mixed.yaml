@@ -1,4 +1,4 @@
-_target_: src.models.focus_module_patch.FocusModule
+_target_: src.models.focus_module_jiang.FocusModuleJiang
 
 optimizer:
   _target_: torch.optim.Adam

@@ -16,9 +16,9 @@ description: Only learn spectral features
 
 program: src/train.py
 ###### IMPORTANT ######
-project: SweepYNetSpectral # CHECK FOR CORRECT MODEL AND DATAMODULE IN train.yaml
+project: SweepYNetMixed # CHECK FOR CORRECT MODEL AND DATAMODULE IN train.yaml
 ###### IMPORTANT ######
-name: SpectralRELU
+name: MixedRELU
 method: bayes
 metric:
   name: val/loss
@@ -29,7 +29,7 @@ parameters:
   trainer.accelerator:
     value: gpu
   trainer.devices:
-    value: 2
+    value: 1
   trainer.max_epochs:
     value: 150
   model.net.activation_function:
@@ -37,8 +37,8 @@ parameters:
   model.net.ratio_in:
     value: .5
   model.optimizer.lr:
-    min: 0.00001
-    max: 0.001
+    min: 0.000001
+    max: 0.0001
   model.optimizer.weight_decay:
     min: 0.00001
     max: 0.1
@@ -47,7 +47,7 @@ parameters:
   datamodule.num_workers:
     value: 16
   callbacks.early_stopping.patience:
-    value: 10
+    value: 30
 
 command:
   - ${env}

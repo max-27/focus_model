@@ -17,11 +17,9 @@ from pytorch_lightning import Callback, LightningDataModule, LightningModule, Tr
 from pytorch_lightning.loggers import LightningLoggerBase
 
 from src import utils
-from src.datamodules.components.focus_dataset import FocusDataset # pylint: disable=unused-import
-from src.datamodules.components.patch_dataset_new import PatchNewDataset # pylint: disable=unused-import
+from src.datamodules.components.focus_dataset import FocusDataset, PatchNewDataset # pylint: disable=unused-import
 from src.datamodules.components.patch_dataset import PatchFocusDataset # pylint: disable=unused-import
-from src.datamodules.components.jiang_dataset import PatchNewDataset # pylint: disable=unused-import
-from src.test import TestDataset # pylint: disable=unused-import
+from src.datamodules.components.jiang_dataset import JiangDataset # pylint: disable=unused-import
 
 
 log = utils.get_pylogger(__name__)

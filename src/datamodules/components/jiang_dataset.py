@@ -23,7 +23,7 @@ from src.utils.color_filter import ColorFilter
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 
 
-class PatchNewDataset(Dataset):
+class JiangDataset(Dataset):
     def __init__(
         self,
         data_dir: str,
@@ -52,7 +52,7 @@ class PatchNewDataset(Dataset):
             patch = transforms.ToTensor()(patch)
         if type(label) != torch.Tensor:
             label = torch.tensor(label, dtype=torch.float)
-        return patch, label, self.array_images[idx].split('/')[-2]
+        return patch, label, self.array_images[idx].split('/')[-2:]
 
     def _find_files(self) -> None:
         self.array_images = glob.glob(os.path.join(self.data_dir,'*/*.jpg'))
@@ -66,19 +66,19 @@ if __name__ == "__main__":
     data_dir = "/n/data2/hms/dbmi/kyu/lab/maf4031/incoherent_RGBchannels/train_incoherent_RGBChannels"
 
     start_time = time.time()
-    train_dataset = PatchNewDataset(data_dir=data_dir)
+    train_dataset = JiangDataset(data_dir=data_dir)
     print(len(train_dataset))
     print(f"Time to load dataset: {time.time() - start_time}")
     torch.save(train_dataset, f"/home/maf4031/focus_model/data/jiang_datasets/dataset_patch_train.pt")
 
-    data_dir = "/n/data2/hms/dbmi/kyu/lab/maf4031/incoherent_RGBchannels/testRawData_incoherent_sameProtocol"
+    data_dir = "/n/data2/hms/dbmi/kyu/lab/maf4031/incoherent_RGBchannels/test_patches_binned4_sameProtocol"
     start_time = time.time()
-    test_dataset = PatchNewDataset(data_dir=data_dir)
+    test_dataset = JiangDataset(data_dir=data_dir)
     print(f"Time to load dataset: {time.time() - start_time}")
-    torch.save(test_dataset, f"/home/maf4031/focus_model/data/jiang_datasets/dataset_patch_test_same.pt")
+    torch.save(test_dataset, f"/home/maf4031/focus_model/data/jiang_datasets/dataset_patch_binned4_test_same.pt")
 
-    data_dir = "/n/data2/hms/dbmi/kyu/lab/maf4031/incoherent_RGBchannels/testRawData_incoherent_diffProtocol"
-    start_time = time.time()
-    test_dataset = PatchNewDataset(data_dir=data_dir)
-    print(f"Time to load dataset: {time.time() - start_time}")
-    torch.save(test_dataset, f"/home/maf4031/focus_model/data/jiang_datasets/dataset_patch_test_diff.pt")
+    #data_dir = "/n/data2/hms/dbmi/kyu/lab/maf4031/incoherent_RGBchannels/testRawData_incoherent_diffProtocol"
+    #start_time = time.time()
+    #test_dataset = PatchNewDataset(data_dir=data_dir)
+    #print(f"Time to load dataset: {time.time() - start_time}")
+    #torch.save(test_dataset, f"/home/maf4031/focus_model/data/jiang_datasets/dataset_patch_test_diff.pt")

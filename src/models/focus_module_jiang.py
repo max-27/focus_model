@@ -7,7 +7,7 @@ from pytorch_lightning import LightningModule
 from torchmetrics import MaxMetric, MeanMetric, MinMetric
 from torchmetrics import MeanAbsoluteError
 
-class FocusModule(LightningModule):
+class FocusModuleJiang(LightningModule):
 
     def __init__(
         self,
@@ -34,7 +34,6 @@ class FocusModule(LightningModule):
         self.test_loss = MeanMetric()
 
         self.val_focus_error_best = MinMetric()
-        self.test_focus_err_best = MinMetric()
 
     def forward(self, x: torch.Tensor):
         return self.net(x)
@@ -96,19 +95,15 @@ class FocusModule(LightningModule):
         self.log("test/focus_error", self.test_focus_error, on_step=False, on_epoch=True, prog_bar=True)
         return {"loss": loss, "preds": preds, "targets": targets}
 
-    def test_epoch_end(self, outputs: List[Any]):
-        with open('/home/maf4031/focus_model/output/test_prediction.pkl', 'wb') as f:
-            pickle.dump(self.test_prediction_dict, f)
-        
+    def test_epoch_end(self, outputs: List[Any]):        
         errors = []
         for sample_id in self.test_prediction_dict:
             self.test_prediction_dict[sample_id] = torch.mean(self.test_prediction_dict[sample_id])
             errors.append(abs(self.test_target_dict[sample_id]-self.test_prediction_dict[sample_id]))
         final_error = torch.mean(torch.Tensor(errors))
         final_std = torch.std(torch.Tensor(errors))
-        self.log("test/focus_error", final_error, prog_bar=True)
-        self.log("test/focus_std", final_std, prog_bar=True)
-        self.log("test/focus_error_best", self.test_focus_err_best.compute(), prog_bar=True)
+        self.log("test/focus_error_per_sample", final_error, prog_bar=True)
+        self.log("test/focus_std_per_sample", final_std, prog_bar=True)
 
     def configure_optimizers(self):
         #optimizer = self.hparams.optimizer(params=self.parameters())

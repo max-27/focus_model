@@ -1,4 +1,4 @@
-_target_: src.models.focus_module.FocusModule
+_target_: src.models.focus_module_patch.FocusModule
 
 optimizer:
   _target_: torch.optim.Adam
@@ -11,8 +11,8 @@ scheduler:
   _partial_: true
   mode: min
   factor: 0.1
-  patience: 10 
+  patience: 3
 
 net:
   _target_: src.models.components.mobile_net_v3.MobileNetV3
-  transfer: True
+  transfer: False

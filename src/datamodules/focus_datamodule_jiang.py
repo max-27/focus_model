@@ -15,7 +15,7 @@ from pytorch_lightning import LightningDataModule
 from torch.utils.data import ConcatDataset, DataLoader, Dataset, random_split
 from torchvision.transforms import transforms
 from torchvision.transforms.functional import InterpolationMode
-from src.datamodules.components.patch_dataset_new import PatchNewDataset
+from src.datamodules.components.jiang_dataset import JiangDataset
 
 
 class Transformation:
@@ -51,7 +51,7 @@ class Transformation:
         return self.transforms(x)
 
 
-class FocusDataModulePatch(LightningDataModule):
+class FocusDataModuleJiang(LightningDataModule):
     def __init__(
         self,
         train_dataset_dir: str = "",

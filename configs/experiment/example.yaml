@@ -6,6 +6,7 @@
 defaults:
   - override /datamodule: ynet_jiang.yaml
   - override /model: ynet_mixed.yaml
+  #- override /model: mobilenetv3.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
 
@@ -19,22 +20,28 @@ seed: 42
 callbacks:
   early_stopping:
     monitor: "val/loss"
-    patience: 6
+    patience: 20
     mode: "min"
 
 trainer:
   min_epochs: 1
-  max_epochs: 80
+  max_epochs: 100
   accelerator: gpu
-  devices: 1
+  devices: 2
 
 model:
   optimizer:
-    lr: .0001
-    weight_decay: 0.0
+    lr: 1e-4
+    weight_decay: 5e-3
 
 datamodule:
-  batch_size: 32
+  batch_size: 10
+  # transformations:
+  #   params:
+  #     horizontal_flip: True
+  #     vertical_flip: True 
+  #     color_jitter: True  
+  #     rotation: True
 
 logger:
   wandb:
