@@ -9,18 +9,13 @@ from skimage import io
 from typing import List, Tuple, Callable
 
 
-def _select_patches_from_grid(img_path, threshold=50.) -> List:
-    # select patches from a grid from each image
-
-
-    return patches, patch_labels
-
-
-data_dir = "/Users/max/Desktop/incoherent_RGBchannels/testRawData_incoherent_sameProtocol"
-save_dir = "/Users/max/Desktop/incoherent_RGBchannels/test_patches_sameProtocol"
+#data_dir = "/n/data2/hms/dbmi/kyu/lab/maf4031/incoherent_RGBchannels/testRawData_incoherent_sameProtocol"
+data_dir = "/n/data2/hms/dbmi/kyu/lab/maf4031/incoherent_RGBchannels/test_images_binned4_sameProtocol"
+save_dir = "/n/data2/hms/dbmi/kyu/lab/maf4031/incoherent_RGBchannels/test_patches_binned4_sameProtocol"
 Path(save_dir).mkdir(parents=True, exist_ok=True)
 
-image_size = (2048, 2448)
+
+image_size = (int(2048/4), int(2448/4))
 patch_size = (224, 224)
 array_images, array_labels = [], []
 
