@@ -9,18 +9,13 @@ from skimage import io
 from typing import List, Tuple, Callable
 
 
-def _select_patches_from_grid(img_path, threshold=50.) -> List:
-    # select patches from a grid from each image
-
-
-    return patches, patch_labels
-
-
-data_dir = "/Users/max/Desktop/incoherent_RGBchannels/testRawData_incoherent_sameProtocol"
-save_dir = "/Users/max/Desktop/incoherent_RGBchannels/test_patches_sameProtocol"
+#data_dir = "/n/data2/hms/dbmi/kyu/lab/maf4031/incoherent_RGBchannels/testRawData_incoherent_sameProtocol"
+data_dir = "/n/data2/hms/dbmi/kyu/lab/maf4031/incoherent_RGBchannels/test_images_binned4_sameProtocol"
+save_dir = "/n/data2/hms/dbmi/kyu/lab/maf4031/incoherent_RGBchannels/test_patches_binned4_sameProtocol"
 Path(save_dir).mkdir(parents=True, exist_ok=True)
 
-image_size = (2048, 2448)
+
+image_size = (int(2048/4), int(2448/4))
 patch_size = (224, 224)
 array_images, array_labels = [], []
 
@@ -43,6 +38,6 @@ for img_path in tqdm(array_images):
     image = io.imread(img_path)
     for x, y in patch_coords:
         patch = image[int(x-int(patch_size[0]/2)):int(x+int(patch_size[0]/2)), int(y-int(patch_size[1]/2)):int(y+int(patch_size[1]/2))]
-        cv2.imwrite(os.path.join(save_dir, folder_name, f"{int(x)}_{int(y)}_{img_name}.jpg"), patch)
+        cv2.imwrite(os.path.join(save_dir, folder_name, f"{int(x)}_{int(y)}_{img_name}"), patch)
         #patches.append((img_path, int(x), int(y)))
         #patch_labels.append(int(re.findall(r"-?\d+", img_path.split("/")[-1])[-1]))
